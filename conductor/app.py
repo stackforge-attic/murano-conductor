@@ -102,4 +102,3 @@ class ConductorWorkflowService(service.Service):
                                 task_received, msg.body, msg.id)
             except Exception as ex:
                 log.exception(ex)
-

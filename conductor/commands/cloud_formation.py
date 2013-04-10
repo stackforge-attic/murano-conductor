@@ -162,7 +162,9 @@ class HeatExecutor(CommandBase):
         try:
             stack_info = self._heat_client.stacks.get(stack_id=self._stack)
             template = self._heat_client.stacks.template(
-                stack_id='{0}/{1}'.format(stack_info.stack_name, stack_info.id))
+                stack_id='{0}/{1}'.format(
+                    stack_info.stack_name,
+                    stack_info.id))
             return template, stack_info.parameters
         except heatclient.exc.HTTPNotFound:
             return {}, {}

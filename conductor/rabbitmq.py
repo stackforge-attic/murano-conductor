@@ -56,7 +56,9 @@ class RmqClient(object):
         self._client.wait(promise)
 
         if exchange:
-            promise = self._client.exchange_declare(str(exchange), durable=True)
+            promise = self._client.exchange_declare(
+                str(exchange),
+                durable=True)
             self._client.wait(promise)
             promise = self._client.queue_bind(
                 str(queue), str(exchange), routing_key=str(queue))
@@ -66,7 +68,7 @@ class RmqClient(object):
         if not self._connected:
             raise RuntimeError('Not connected to RabbitMQ')
 
-        headers = { 'message_id': message.id }
+        headers = {'message_id': message.id}
 
         promise = self._client.basic_publish(
             exchange=str(exchange),
@@ -138,4 +140,3 @@ class Message(object):
     @id.setter
     def id(self, value):
         self._id = value or ''
-

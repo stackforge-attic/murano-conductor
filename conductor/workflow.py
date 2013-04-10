@@ -166,7 +166,6 @@ class Workflow(object):
 
                 engine.evaluate_content(empty_handler, context)
 
-
     @staticmethod
     def _workflow_func(context, body, engine, **kwargs):
         context['/hasSideEffects'] = False

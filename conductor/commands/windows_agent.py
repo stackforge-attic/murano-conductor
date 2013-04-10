@@ -57,5 +57,3 @@ class WindowsAgentExecutor(CommandBase):
                     item['callback'](msg.body)
 
         return True
-
-
