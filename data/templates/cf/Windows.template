@@ -7,7 +7,7 @@
     "KeyName" : {
       "Description" : "Name of an existing Amazon EC2 key pair for RDP access",
       "Type" : "String",
-      "Default" : "keero_key"
+      "Default" : "murano-keys"
     },
     "InstanceType" : {
       "Description" : "Amazon EC2 instance type",

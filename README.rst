@@ -1,8 +1,8 @@
-Glazier Conductor README
+Murano Conductor README
 ========================
-Conductor is an Glazier orchestration engine that transforms object model sent by
-REST API service into a series of Heat and Glazier-Agent commands
+Conductor is an Murano orchestration engine that transforms object model sent by
+REST API service into a series of Heat and Murano-Agent commands
 
 SEE ALSO
 --------
-* `Keero <http://keero.mirantis.com>`__
+* `Murano <http://murano.mirantis.com>`__

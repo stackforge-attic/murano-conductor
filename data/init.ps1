@@ -1,7 +1,7 @@
 #ps1
 
 $WindowsAgentConfigBase64 = '%WINDOWS_AGENT_CONFIG_BASE64%'
-$WindowsAgentConfigFile = "C:\Keero\Agent\WindowsAgent.exe.config"
+$WindowsAgentConfigFile = "C:\Murano\Agent\WindowsAgent.exe.config"
 
 $NewComputerName = '%INTERNAL_HOSTNAME%'
 
@@ -9,12 +9,12 @@ $RestartRequired = $false
 
 Import-Module CoreFunctions
 
-Write-Log "Updating Keero Windows Agent."
-Stop-Service "Keero Agent"
+Write-Log "Updating Murano Windows Agent."
+Stop-Service "Murano Agent"
 Backup-File $WindowsAgentConfigFile
 Remove-Item $WindowsAgentConfigFile -Force
 ConvertFrom-Base64String -Base64String $WindowsAgentConfigBase64 -Path $WindowsAgentConfigFile
-Exec sc.exe 'config','"Keero Agent"','start=','delayed-auto'
+Exec sc.exe 'config','"Murano Agent"','start=','delayed-auto'
 Write-Log "Service has been updated."
 
 Write-Log "Renaming computer ..."
@@ -29,5 +29,5 @@ if ( $RestartRequired ) {
     Restart-Computer -Force
 }
 else {
-    Start-Service 'Keero Agent'
+    Start-Service 'Murano Agent'
 }

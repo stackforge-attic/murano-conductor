@@ -218,7 +218,7 @@ htmlhelp_basename = 'conductordoc'
 # documentclass [howto/manual]).
 latex_documents = [
     ('index', 'Conductor.tex', u'Conductor Documentation',
-     u'Keero Team', 'manual'),
+     u'Murano Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
