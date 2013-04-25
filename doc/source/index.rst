@@ -31,22 +31,23 @@ Installation Guide
 Install
 -------
 
-    Check out sources to some directory (<home>/murano):
+1.  Check out sources to some directory (<home>/murano)::
 
-    smelikyan@work:~/git clone https://github.com/Mirantis/murano-conductor.git
+    user@work:~/git clone https://github.com/Mirantis/murano-conductor.git
 
-    Install Conductor:
+2.  Install Conductor::
 
-    smelikyan@work:~/cd murano/conductor && sudo python setup.py install
+    user@work:~/cd murano/conductor && sudo python setup.py install
 
 Configure
 ---------
 
-    Open configuration file for editing:
+1.  Open configuration file for editing::
 
-    smelikyan@work:~/cd murano/conductor/etc && nano conductor.conf
+    user@work:~/cd murano/conductor/etc && nano conductor.conf
 
-    Configure according to you environment:
+2.  Configure according to you environment::
+
     [DEFAULT]
     log_file = logs/conductor.log
     debug=True
@@ -68,5 +69,5 @@ Run
 
 Run Conductor and supply valid configuration file:
 
-smelikyan@work:~/cd murano/conductor && conductor --config-file=./murano/conductor/etc/conductor.conf
+user@work:~/cd murano/conductor && conductor --config-file=./murano/conductor/etc/conductor.conf
 
