@@ -15,11 +15,11 @@
       under the License.
 
 =======================================================
-Welcome to Conductor, the Glazier orchestration engine!
+Welcome to Conductor, the Murano orchestration engine!
 =======================================================
 
-Conductor is an Glazier orchestration engine that transforms object model sent by
-REST API service into a series of Heat and Glazier-Agent commands
+Conductor is an Murano orchestration engine that transforms object model sent by
+REST API service into a series of Heat and Murano-Agent commands
 
 This document describes Conductor for contributors of the project.
 
@@ -31,20 +31,20 @@ Installation Guide
 Install
 -------
 
-    Check out sources to some directory (<home>/glazier):
+    Check out sources to some directory (<home>/murano):
 
-    smelikyan@work:~/git clone ssh://<user>@gerrit.mirantis.com:29418/keero/keero.git
+    smelikyan@work:~/git clone https://github.com/Mirantis/murano-conductor.git
 
     Install Conductor:
 
-    smelikyan@work:~/cd glazier/conductor && sudo python setup.py install
+    smelikyan@work:~/cd murano/conductor && sudo python setup.py install
 
 Configure
 ---------
 
     Open configuration file for editing:
 
-    smelikyan@work:~/cd glazier/conductor/etc && nano conductor.conf
+    smelikyan@work:~/cd murano/conductor/etc && nano conductor.conf
 
     Configure according to you environment:
     [DEFAULT]
@@ -59,14 +59,14 @@ Configure
     # this must be IP or hostname accessible from instances (VMs)
     host = YOUR.REAL.IP.HERE
     port = 5672
-    virtual_host = glazier
-    login = glazier
-    password = glazier
+    virtual_host = murano
+    login = murano
+    password = murano
 
 Run
 ----
 
 Run Conductor and supply valid configuration file:
 
-smelikyan@work:~/cd glazier/conductor && conductor --config-file=./glazier/conductor/etc/conductor.conf
+smelikyan@work:~/cd murano/conductor && conductor --config-file=./murano/conductor/etc/conductor.conf
 
