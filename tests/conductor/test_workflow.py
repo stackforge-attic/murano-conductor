@@ -63,8 +63,8 @@ class TestWorkflow(unittest.TestCase):
                 </rule>
             </workflow>
         '''
-        self.assertNotIn(
-            'state',
+        self.assertFalse(
+            'state' in
             self.model['services']['activeDirectories'][0])
 
         self._execute_workflow(xml)
@@ -96,4 +96,3 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(
             self.model['services']['activeDirectories'][0]['test'],
             'Domain acme.loc with primary DC dc01')
-

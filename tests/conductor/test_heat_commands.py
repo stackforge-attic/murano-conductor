@@ -24,7 +24,6 @@ from conductor.commands.cloud_formation import HeatExecutor
 
 
 class TestHeatExecutor(unittest.TestCase):
-
     def setUp(self):
         self.mfs = mockfs.replace_builtins()
         template = {
@@ -48,8 +47,6 @@ class TestHeatExecutor(unittest.TestCase):
             'endpoints': [{'publicURL': 'http://invalid.heat.url'}]
         }]
 
-
-
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
     @mock.patch('conductor.config.CONF')
@@ -69,7 +66,6 @@ class TestHeatExecutor(unittest.TestCase):
                 'arg1': 'arg1Value',
                 'arg2': 'arg2Value'},
             callback=callback)
-
 
         heat_mock().stacks.get().stack_status = 'CREATE_COMPLETE'
         heat_mock().stacks.template = mock.MagicMock(
@@ -125,9 +121,7 @@ class TestHeatExecutor(unittest.TestCase):
             get_mock._status_index += 1
             return get_mock
 
-
         heat_mock().stacks.get = mock.MagicMock(side_effect=side_effect)
-
         heat_mock().stacks.template = mock.MagicMock(
             return_value={'instance': {}})
 
@@ -159,7 +153,6 @@ class TestHeatExecutor(unittest.TestCase):
             template='test',
             command='Delete',
             callback=callback)
-
 
         heat_mock().stacks.get = mock.MagicMock(
             side_effect=heatclient.exc.HTTPNotFound)
