@@ -51,7 +51,7 @@ class TestWorkflow(unittest.TestCase):
     def test_empty_workflow_leaves_object_model_unchanged(self):
         xml = '<workflow/>'
         self._execute_workflow(xml)
-        self.assertIsNone(deep.diff(self.original_model, self.model))
+        self.assertTrue(deep.diff(self.original_model, self.model) is None)
 
     def test_modifying_object_model_from_workflow(self):
         xml = '''
@@ -63,8 +63,8 @@ class TestWorkflow(unittest.TestCase):
                 </rule>
             </workflow>
         '''
-        self.assertNotIn(
-            'state',
+        self.assertFalse(
+            'state' in
             self.model['services']['activeDirectories'][0])
 
         self._execute_workflow(xml)
@@ -73,9 +73,9 @@ class TestWorkflow(unittest.TestCase):
             self.model['services']['activeDirectories'][0]['state']['invalid'],
             'value')
 
-        self.assertIsNotNone(deep.diff(self.original_model, self.model))
+        self.assertFalse(deep.diff(self.original_model, self.model) is None)
         del self.model['services']['activeDirectories'][0]['state']
-        self.assertIsNone(deep.diff(self.original_model, self.model))
+        self.assertTrue(deep.diff(self.original_model, self.model) is None)
 
     def test_selecting_properties_from_object_model_within_workflow(self):
         xml = '''
@@ -96,4 +96,3 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(
             self.model['services']['activeDirectories'][0]['test'],
             'Domain acme.loc with primary DC dc01')
-
