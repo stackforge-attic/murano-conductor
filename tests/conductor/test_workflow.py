@@ -96,4 +96,3 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(
             self.model['services']['activeDirectories'][0]['test'],
             'Domain acme.loc with primary DC dc01')
-
