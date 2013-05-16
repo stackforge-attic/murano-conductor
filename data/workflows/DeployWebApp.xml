@@ -1,0 +1,87 @@
+<workflow>
+	<rule match="$.services.webServers[?(@.domain)].units[*]">
+		<set path="domain">
+			<select path="::domain"/>
+		</set>
+	</rule>
+
+	<rule match="$.services.webServers[*].units[?(@.state.hostname and not @.state.instanceName)]">
+		<report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Creating instance <select path="name"/></parameter>
+		</report>
+		<update-cf-stack template="Windows">
+			<parameter name="mappings">
+				<map>
+					<mapping name="instanceName"><select path="::name"/>-<select path="name"/></mapping>
+					<mapping name="userData">
+						<prepare-user-data>
+							<parameter name="hostname"><select path="state.hostname"/></parameter>
+							<parameter name="unit"><select path="name"/></parameter>
+							<parameter name="service"><select path="::id"/></parameter>
+						</prepare-user-data>
+					</mapping>
+				</map>
+			</parameter>
+			<parameter name="arguments">
+				<map>
+					<argument name="KeyName">murano-keys</argument>
+					<argument name="InstanceType">m1.medium</argument>
+					<argument name="ImageName">ws-2012-full</argument>
+				</map>
+			</parameter>
+
+			<success>
+				<set path="state.instanceName"><select path="name"/></set>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Instance <select path="name"/> created</parameter>
+				</report>
+			</success>
+		</update-cf-stack>
+	</rule>
+
+	<rule match="$.services.webServers[*].units[?(@.state.instanceName and not @.state.iisInstalled)]">
+		<report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Creating IIS Web Server on unit <select path="name"/></parameter>
+		</report>
+		<send-command template="InstallIIS">
+			<parameter name="host">
+				<select path="name"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+			<success>
+				<set path="state.iisInstalled"><true/></set>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">IIS <select path="name"/> has started</parameter>
+				</report>
+			</success>
+		</send-command>
+	</rule>
+
+	<rule match="$.services.webServers[*].units[?(@.state.instanceName and @.state.iisInstalled)]">
+		<report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Deploying Web App on unit <select path="name"/></parameter>
+		</report>
+		<send-command template="DeployWebApp">
+			<parameter name="host">
+				<select path="name"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+			<success>
+				<set path="state.WebAppDeployed"><true/></set>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">WebApp <select path="name"/> has been deployed.</parameter>
+				</report>
+			</success>
+		</send-command>
+	</rule>
+</workflow>
