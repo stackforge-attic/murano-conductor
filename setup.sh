@@ -1,6 +1,19 @@
 #!/bin/sh
-# Install script for murano-conductor daemon
-# writen by Igor Yozhikov, provides as-is.
+#    Copyright (c) 2013 Mirantis, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+#    Ubuntu script.
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
 PREREQ_PKGS="wget git python-pip python-dev python-mysqldb"
@@ -13,7 +26,7 @@ SERVICE_CONFIG_FILE_PATH="$ETC_CFG_DIR/conductor.conf"
 if [ -z "$SERVICE_EXEC_PATH" ];then
 	SERVICE_EXEC_PATH="/usr/local/bin/conductor"
 fi
-# Functions 
+# Functions
 # Loger function
 log()
 {
@@ -28,17 +41,17 @@ in_sys_pkg()
 {
 	PKG=$1
 	dpkg -s $PKG > /dev/null 2>&1
-	if [ $? -eq 0 ]; then 
+	if [ $? -eq 0 ]; then
         	log "Package \"$PKG\" already installed"
-	else 
+	else
 		log "Installing \"$PKG\"..."
-        	apt-get install $PKG --yes > /dev/null 2>&1
-		if [ $? -ne 0 ];then 
-			log "installation fails, exiting!!!" 
+		apt-get install $PKG --yes > /dev/null 2>&1
+		if [ $? -ne 0 ];then
+		    log "installation fails, exiting!!!"
 			exit
-		fi      
+		fi
 	fi
-} 
+}
 
 # git clone
 gitclone()
@@ -48,10 +61,10 @@ gitclone()
 	log "Cloning from \"$FROM\" repo to \"$CLONEROOT\""
 	cd $CLONEROOT && git clone $FROM > /dev/null 2>&1
 	if [ $? -ne 0 ];then
-        	log "cloning from \"$FROM\" fails, exiting!!!"
-                exit
-        fi
-} 
+	    log "cloning from \"$FROM\" fails, exiting!!!"
+        exit
+    fi
+}
 
 
 # install
@@ -70,8 +83,8 @@ CLONE_FROM_GIT=$1
 	if [ ! -d $GIT_CLONE_DIR ];then
 		log "Creting $GIT_CLONE_DIR direcory..."
 		mkdir -p $GIT_CLONE_DIR
-		if [ $? -ne 0 ];then 
-			log "Can't create $GIT_CLONE_DIR, exiting!!!" 
+		if [ $? -ne 0 ];then
+			log "Can't create $GIT_CLONE_DIR, exiting!!!"
 			exit
 		fi      
 	fi		
@@ -100,13 +113,13 @@ CLONE_FROM_GIT=$1
 	if [ ! -d $ETC_CFG_DIR ];then
 		log "Creting $ETC_CFG_DIR direcory..."
 		mkdir -p $ETC_CFG_DIR
-		if [ $? -ne 0 ];then 
-			log "Can't create $ETC_CFG_DIR, exiting!!!" 
+		if [ $? -ne 0 ];then
+			log "Can't create $ETC_CFG_DIR, exiting!!!"
 			exit
 		fi
 	fi
-# making smaple configs 
-	log "Making sample configuration files at \"$ETC_CFG_DIR\""	
+# making smaple configs
+	log "Making sample configuration files at \"$ETC_CFG_DIR\""
 	for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
 	do
 		cp -f "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc/$file" "$ETC_CFG_DIR/$file.sample"
@@ -119,8 +132,8 @@ injectinit()
 ln -s /lib/init/upstart-job /etc/init.d/$SERVICE_SRV_NAME
 echo "description \"Murano Conductor service\" 
 author \"Igor Yozhikov <iyozhikov@mirantis.com>\" 
-start on runlevel [2345] 
-stop on runlevel [!2345] 
+start on runlevel [2345]
+stop on runlevel [!2345]
 respawn
 exec start-stop-daemon --start --chuid root --user root --name $SERVICE_SRV_NAME --exec $SERVICE_EXEC_PATH -- --config-file=$SERVICE_CONFIG_FILE_PATH" > "/etc/init/$SERVICE_SRV_NAME.conf"
 log "Reloading initctl"
@@ -139,7 +152,7 @@ purgeinit()
 	initctl reload-configuration
 }
 
-# uninstall 
+# uninstall
 uninst()
 {
 	rm -f $SERVICE_EXEC_PATH
@@ -158,39 +171,39 @@ case $COMMAND in
 		# searching for daemon PATH
 		if [ ! -x $SERVICE_EXEC_PATH ];then	
 			log "Can't find \"conductor\" in at \"$SERVICE_EXEC_PATH\", please install the \"$SERVICE_SRV_NAME\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!!!"
-			exit			
-        	fi
-        	ln -s /lib/init/upstart-job /etc/init.d/$SERVICE_SRV_NAME
-        	log "Injecting \"$SERVICE_SRV_NAME\" to init..."
-        	injectinit
-        	postinst
+			exit
+		fi
+		ln -s /lib/init/upstart-job /etc/init.d/$SERVICE_SRV_NAME
+		log "Injecting \"$SERVICE_SRV_NAME\" to init..."
+		injectinit
+		postinst
 		;;
-	
+
 	install )
 		inst
 		injectinit
-		postinst		
+		postinst
 		;;	
-	
+
 	installfromgit )
 		inst "yes"
 		injectinit
-		postinst		
+		postinst
 		;;	
-		
+
 	purge-init )
 		log "Purging \"$SERVICE_SRV_NAME\" from init..."
 		stop $SERVICE_SRV_NAME
 		purgeinit
 		;;
-	
+
 	uninstall )
 		log "Uninstalling \"$SERVICE_SRV_NAME\" from system..."
 		stop $SERVICE_SRV_NAME
 		purgeinit
 		uninst
 		;;
-		
+
 	* )
 		echo "Usage: $(basename "$0") install | installfromgit | uninstall | inject-init | purge-init"
 		exit 1
