@@ -13,17 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
-#    Ubuntu script.
+#    CentOS script
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
-PREREQ_PKGS="wget git python-pip python-dev python-mysqldb"
+PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python"
 SERVICE_SRV_NAME="murano-conductor"
 GIT_CLONE_DIR=`echo $SERVICE_CONTENT_DIRECTORY | sed -e "s/$SERVICE_SRV_NAME//"`
 ETC_CFG_DIR="/etc/$SERVICE_SRV_NAME"
 SERVICE_CONFIG_FILE_PATH="$ETC_CFG_DIR/conductor.conf"
 
 if [ -z "$SERVICE_EXEC_PATH" ];then
-	SERVICE_EXEC_PATH="/usr/local/bin/conductor"
+	SERVICE_EXEC_PATH="/usr/bin/conductor"
 fi
 # Functions
 # Loger function
@@ -39,15 +39,15 @@ log()
 in_sys_pkg()
 {
 	PKG=$1
-	dpkg -s $PKG > /dev/null 2>&1
+	rpm -q $PKG > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
-        	log "Package \"$PKG\" already installed"
+	    log "Package \"$PKG\" already installed"
 	else
 		log "Installing \"$PKG\"..."
-		apt-get install $PKG --yes > /dev/null 2>&1
+		yum install $PKG --assumeyes > /dev/null 2>&1
 		if [ $? -ne 0 ];then
 		    log "installation fails, exiting!!!"
-			exit
+		    exit
 		fi
 	fi
 }
@@ -59,22 +59,21 @@ gitclone()
 	CLONEROOT=$2
 	log "Cloning from \"$FROM\" repo to \"$CLONEROOT\""
 	cd $CLONEROOT && git clone $FROM > /dev/null 2>&1
-	if [ $? -ne 0 ];then
+    if [ $? -ne 0 ];then
 	    log "cloning from \"$FROM\" fails, exiting!!!"
-        exit
+	    exit
     fi
 }
-
 
 # install
 inst()
 {
-CLONE_FROM_GIT=$1	
+CLONE_FROM_GIT=$1
 # Checking packages
 	for PKG in $PREREQ_PKGS
 	do
-		in_sys_pkg $PKG
-	done 
+	    in_sys_pkg $PKG
+	done
 
 # If clone from git set
 	if [ ! -z $CLONE_FROM_GIT ]; then
@@ -83,15 +82,15 @@ CLONE_FROM_GIT=$1
 		log "Creating $GIT_CLONE_DIR direcory..."
 		mkdir -p $GIT_CLONE_DIR
 		if [ $? -ne 0 ];then
-			log "Can't create $GIT_CLONE_DIR, exiting!!!"
-			exit
-		fi      
-	fi		
+		    log "Can't create $GIT_CLONE_DIR, exiting!!!"
+		    exit
+		fi
+    fi
 # Cloning from GIT
 		GIT_WEBPATH_PRFX="https://github.com/stackforge/"
 		gitclone "$GIT_WEBPATH_PRFX$SERVICE_SRV_NAME.git" $GIT_CLONE_DIR
-# End clone from git section 
-	fi
+# End clone from git section
+    fi
 
 # Setupping...
 	log "Running setup.py"
@@ -128,27 +127,22 @@ CLONE_FROM_GIT=$1
 # inject init
 injectinit()
 {
-ln -s /lib/init/upstart-job /etc/init.d/$SERVICE_SRV_NAME
-echo "description \"Murano Conductor service\" 
-author \"Igor Yozhikov <iyozhikov@mirantis.com>\" 
+echo "description \"Murano Conductor service\"
+author \"Igor Yozhikov <iyozhikov@mirantis.com>\"
 start on runlevel [2345]
 stop on runlevel [!2345]
 respawn
-exec start-stop-daemon --start --chuid root --user root --name $SERVICE_SRV_NAME --exec $SERVICE_EXEC_PATH -- --config-file=$SERVICE_CONFIG_FILE_PATH" > "/etc/init/$SERVICE_SRV_NAME.conf"
+exec $SERVICE_EXEC_PATH --config-file=$SERVICE_CONFIG_FILE_PATH" > "/etc/init/$SERVICE_SRV_NAME.conf"
 log "Reloading initctl"
 initctl reload-configuration
-update-rc.d $SERVICE_SRV_NAME defaults
-
 }
 
 # purge init
 purgeinit()
 {
-	update-rc.d -f $SERVICE_SRV_NAME remove
-	rm -f /etc/init.d/$SERVICE_SRV_NAME
 	rm -f /etc/init/$SERVICE_SRV_NAME.conf
 	log "Reloading initctl"
-	initctl reload-configuration
+    initctl reload-configuration
 }
 
 # uninstall
@@ -167,28 +161,27 @@ postinst()
 COMMAND="$1"
 case $COMMAND in
 	inject-init )
-		# searching for daemon PATH
-		if [ ! -x $SERVICE_EXEC_PATH ]; then	
-			log "Can't find \"conductor\" in at \"$SERVICE_EXEC_PATH\", please install the \"$SERVICE_SRV_NAME\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!!!"
-			exit
-		fi
-		ln -s /lib/init/upstart-job /etc/init.d/$SERVICE_SRV_NAME
-		log "Injecting \"$SERVICE_SRV_NAME\" to init..."
-		injectinit
-		postinst
+	    # searching for daemon PATH
+	    if [ ! -x $SERVICE_EXEC_PATH ]; then
+	        log "Can't find \"conductor\" in at \"$SERVICE_EXEC_PATH\", please install the \"$SERVICE_SRV_NAME\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!!!"
+	        exit
+	    fi
+	    log "Injecting \"$SERVICE_SRV_NAME\" to init..."
+	    injectinit
+	    postinst
 		;;
 
 	install )
 		inst
 		injectinit
 		postinst
-		;;	
+		;;
 
 	installfromgit )
 		inst "yes"
 		injectinit
 		postinst
-		;;	
+		;;
 
 	purge-init )
 		log "Purging \"$SERVICE_SRV_NAME\" from init..."
@@ -208,4 +201,3 @@ case $COMMAND in
 		exit 1
 		;;
 esac
-
