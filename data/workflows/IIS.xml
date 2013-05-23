@@ -41,6 +41,30 @@
 		</update-cf-stack>
 	</rule>
 
+	<rule match="$.services.webServers[?(@.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]">
+		<send-command template="SetPassword">
+			<parameter name="host">
+				<select path="name"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+			<parameter name="mappings">
+				<map>
+					<mapping name="adminPassword">
+						<select path="::adminPassword"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="::state.adminPassword">
+					<select path="::adminPassword"/>
+				</set>
+			</success>
+		</send-command>
+	</rule>
+
+
 	<rule match="$.services.webServers[*].units[?(@.state.instanceName and not @.state.iisInstalled)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
