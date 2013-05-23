@@ -50,7 +50,7 @@ CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(rabbit_opts, group='rabbitmq')
 CONF.register_opts(heat_opts, group='heat')
-
+CONF.register_opt(cfg.StrOpt('file_server'))
 
 CONF.import_opt('verbose', 'conductor.openstack.common.log')
 CONF.import_opt('debug', 'conductor.openstack.common.log')

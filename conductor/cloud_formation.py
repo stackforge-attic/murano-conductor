@@ -73,6 +73,9 @@ def prepare_user_data(context, hostname, service, unit,
                 base64.b64encode(template_data))
 
             init_script = init_script.replace('%INTERNAL_HOSTNAME%', hostname)
+            init_script = init_script.replace(
+                '%MURANO_SERVER_ADDRESS%',
+                config.CONF.file_server or settings.host)
 
             return init_script
 

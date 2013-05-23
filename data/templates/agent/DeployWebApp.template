@@ -6,7 +6,7 @@
     {
       "Name": "Deploy-WebApp",
       "Arguments": {
-        "URL": "git://github.com/Mirantis/murano-mvc-demo.git"
+        "URL": "$repository"
       }
     }
   ],
