@@ -8,7 +8,7 @@
 	<rule match="$.services.webServers,aspNetApps,webServerFarms,aspNetAppFarms[*].units[?(@.state.hostname and not @.state.instanceName)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Creating instance <select path="name"/></parameter>
+			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<update-cf-stack template="Windows">
 			<parameter name="mappings">
@@ -35,7 +35,7 @@
 				<set path="state.instanceName"><select path="name"/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Instance <select path="name"/> created</parameter>
+					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
 				</report>
 			</success>
 		</update-cf-stack>
@@ -52,7 +52,7 @@
 			</parameter>
 			<success>
 				<set path="state.registeredWithLB"><true/></set>
-				<set path="::LoadBalancerIP">
+				<set path="::loadBalancerIP">
 					<select source="outputs" path="LoadBalancerIP"/>
 				</set>
 			</success>
@@ -86,7 +86,7 @@
 	<rule match="$.services.webServers,aspNetApps,webServerFarms,aspNetAppFarms[*].units[?(@.state.instanceName and not @.state.iisInstalled)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Creating IIS Web Server on unit <select path="name"/></parameter>
+			<parameter name="text">Creating IIS Web Server on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<send-command template="InstallIIS">
 			<parameter name="unit">
@@ -99,7 +99,7 @@
 				<set path="state.iisInstalled"><true/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">IIS <select path="name"/> has started</parameter>
+					<parameter name="text">IIS <select path="state.hostname"/> (<select path="name"/>) has started</parameter>
 				</report>
 			</success>
 		</send-command>
@@ -108,7 +108,7 @@
 	<rule match="$.services.aspNetApps,aspNetAppFarms[*].units[?(@.state.iisInstalled and not @.state.webAppDeployed)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Deploying Web App on unit <select path="name"/></parameter>
+			<parameter name="text">Deploying WebApp <select path="::name"/> on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<send-command template="DeployWebApp">
 			<parameter name="unit">
@@ -128,7 +128,7 @@
 				<set path="state.webAppDeployed"><true/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">WebApp <select path="name"/> has been deployed.</parameter>
+					<parameter name="text">WebApp <select path="::name"/> has been deployed on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 				</report>
 			</success>
 		</send-command>
