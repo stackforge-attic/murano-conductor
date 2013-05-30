@@ -84,7 +84,7 @@ class TestHeatExecutor(unittest.TestCase):
                     "testKey": "testValue"
                 }
             })
-        callback.assert_called_with(True)
+        callback.assert_called_with({})
 
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
@@ -139,7 +139,7 @@ class TestHeatExecutor(unittest.TestCase):
                     "testKey": "testValue"
                 }
             })
-        callback.assert_called_with(True)
+        callback.assert_called_with({})
 
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')

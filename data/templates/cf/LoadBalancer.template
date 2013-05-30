@@ -1,0 +1,21 @@
+{
+     "Resources" : {
+         "$lbName" : {
+             "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+             "Properties" : {
+                "Instances" : [{"Ref": "$instanceName"}],
+                "Listeners" : [ {
+                    "LoadBalancerPort" : "$lbPort",
+                    "InstancePort" : "80",
+                    "Protocol" : "HTTP"
+                }]
+            }
+         }
+     },
+     "Outputs": {
+        "LoadBalancerIP": {
+            "Value": { "Fn::GetAtt": [ "$lbName", "DNSName" ] },
+            "Description": ""
+        }
+    }
+}

@@ -22,23 +22,30 @@ import time
 import xml_code_engine
 
 
-def update_cf_stack(engine, context, body, template,
-                    mappings, arguments, **kwargs):
+def update_cf_stack(engine, context, body, template, result=None, **kwargs):
     command_dispatcher = context['/commandDispatcher']
 
-    callback = lambda result: engine.evaluate_content(
-        body.find('success'), context)
+    def callback(result_value):
+        if result is not None:
+            context[result] = result_value['Result']
+        success_handler = body.find('success')
+        if success_handler is not None:
+            engine.evaluate_content(success_handler, context)
 
     command_dispatcher.execute(
         name='cf', command='CreateOrUpdate', template=template,
-        mappings=mappings, arguments=arguments, callback=callback)
+        mappings=kwargs.get('mappings', {}),
+        arguments=kwargs.get('arguments', {}),
+        callback=callback)
 
 
 def delete_cf_stack(engine, context, body, **kwargs):
     command_dispatcher = context['/commandDispatcher']
 
-    callback = lambda result: engine.evaluate_content(
-        body.find('success'), context)
+    def callback(result_value):
+        success_handler = body.find('success')
+        if success_handler is not None:
+            engine.evaluate_content(success_handler, context)
 
     command_dispatcher.execute(
         name='cf', command='Delete', callback=callback)
