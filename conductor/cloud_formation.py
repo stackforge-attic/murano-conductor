@@ -57,10 +57,10 @@ def prepare_user_data(context, hostname, service, unit,
             replacements = {
                 '%RABBITMQ_HOST%': settings.host,
                 '%RABBITMQ_INPUT_QUEUE%': '-'.join(
-                    [str(context['/dataSource']['name']),
+                    ['e' + str(context['/dataSource']['id']),
                      str(service), str(unit)]).lower(),
-                '%RESULT_QUEUE%': '-execution-results-{0}'.format(
-                    str(context['/dataSource']['name'])).lower(),
+                '%RESULT_QUEUE%': '-execution-results-e{0}'.format(
+                    str(context['/dataSource']['id'])).lower(),
                 '%RABBITMQ_USER%': settings.login,
                 '%RABBITMQ_PASSWORD%': settings.password,
                 '%RABBITMQ_VHOST%': settings.virtual_host
@@ -86,7 +86,7 @@ def set_config_params(template_data, replacements):
     return template_data
 
 
-counter = 0
+counters = {}
 
 
 def int2base(x, base):
@@ -108,12 +108,23 @@ def int2base(x, base):
     return ''.join(digits)
 
 
-def generate_hostname(**kwargs):
-    global counter
+def generate_hostname(pattern, service_id, **kwargs):
+    if not pattern:
+        return _generate_random_hostname()
+    elif '#' in pattern:
+        counter = counters.get(service_id) or 1
+        counters[service_id] = counter + 1
+        return pattern.replace('#', str(counter), 1)
+    else:
+        return pattern
+
+
+def _generate_random_hostname():
+    counter = counters.get('') or 1
     prefix = ''.join(random.choice(string.lowercase) for _ in range(5))
     timestamp = int2base(int(time.time() * 1000), 36)[:8]
     suffix = int2base(counter, 36)
-    counter = (counter + 1) % 1296
+    counters[''] = (counter + 1) % 1296
     return prefix + timestamp + suffix
 
 

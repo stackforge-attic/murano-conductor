@@ -13,11 +13,11 @@
 		<update-cf-stack template="Windows">
 			<parameter name="mappings">
 				<map>
-					<mapping name="instanceName"><select path="::name"/>-<select path="name"/></mapping>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
-							<parameter name="unit"><select path="name"/></parameter>
+							<parameter name="unit"><select path="id"/></parameter>
 							<parameter name="service"><select path="::id"/></parameter>
 						</prepare-user-data>
 					</mapping>
@@ -43,8 +43,8 @@
 
 	<rule match="$.services.activeDirectories[*].units[?(@.state.instanceName and @.adminPassword and @.adminPassword != @.state.adminPassword)]">
 		<send-command template="SetPassword">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>
@@ -66,8 +66,8 @@
 
 	<rule match="$.services.activeDirectories[?(@.adminPassword and @.adminPassword != @.state.domainAdminPassword)].units[?(@.state.instanceName and @.isMaster)]">
 		<send-command template="SetPassword">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>
@@ -93,8 +93,8 @@
 			<parameter name="text">Creating Primary Domain Controller on unit <select path="name"/></parameter>
 		</report>
 		<send-command template="CreatePrimaryDC">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>
@@ -121,8 +121,8 @@
 
 	<rule match="$.services.activeDirectories[?(@.state.primaryDc and not @.state.primaryDcIp)].units[?(@.state.instanceName and @.isMaster)]">
 		<send-command template="AskDnsIp" result="ip">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>
@@ -146,8 +146,8 @@
 			<parameter name="match">/$.services.activeDirectories[?(@.domain == '<select path="domain"/>' and @.state.primaryDcIp)]</parameter>
 
 			<send-command template="JoinDomain">
-				<parameter name="host">
-					<select path="name" source="unit"/>
+				<parameter name="unit">
+					<select path="id" source="unit"/>
 				</parameter>
 				<parameter name="service">
 					<select path="id" source="service"/>
@@ -186,8 +186,8 @@
 			<parameter name="text">Creating Secondary Domain Controller on unit <select path="name"/></parameter>
 		</report>
 		<send-command template="CreateSecondaryDC">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>

@@ -17,27 +17,27 @@ class WindowsAgentExecutor(CommandBase):
         self._results_queue = '-execution-results-%s' % str(stack).lower()
         rmqclient.declare(self._results_queue)
 
-    def execute(self, template, mappings, host, service, callback):
-        with open('data/templates/agent/%s.template' % template) as file:
-            template_data = file.read()
+    def execute(self, template, mappings, unit, service, callback):
+        with open('data/templates/agent/%s.template' % template) as t_file:
+            template_data = t_file.read()
 
         template_data = conductor.helpers.transform_json(
             json.loads(template_data), mappings)
 
-        id = str(uuid.uuid4()).lower()
-        host = ('%s-%s-%s' % (self._stack, service, host)).lower()
+        msg_id = str(uuid.uuid4()).lower()
+        queue = ('%s-%s-%s' % (self._stack, service, unit)).lower()
         self._pending_list.append({
-            'id': id,
+            'id': msg_id,
             'callback': callback
         })
 
         msg = Message()
         msg.body = template_data
-        msg.id = id
-        self._rmqclient.declare(host)
-        self._rmqclient.send(message=msg, key=host)
+        msg.id = msg_id
+        self._rmqclient.declare(queue)
+        self._rmqclient.send(message=msg, key=queue)
         log.info('Sending RMQ message {0} to {1} with id {2}'.format(
-            template_data, host, id))
+            template_data, queue, msg_id))
 
     def has_pending_commands(self):
         return len(self._pending_list) > 0
