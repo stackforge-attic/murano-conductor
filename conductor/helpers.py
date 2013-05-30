@@ -27,12 +27,22 @@ def transform_json(json, mappings):
                 transform_json(value, mappings)
         return result
 
-    if isinstance(json, types.StringTypes) and json.startswith('$'):
+    elif isinstance(json, types.ListType):
+        result = []
+        for value in json:
+            result.append(transform_json(value, mappings))
+        return result
+
+    elif isinstance(json, types.StringTypes) and json.startswith('$'):
         value = mappings.get(json[1:])
         if value is not None:
             return value
 
     return json
+
+
+def merge_lists(list1, list2):
+    return list1 + list2
 
 
 def merge_dicts(dict1, dict2, max_levels=0):
@@ -41,13 +51,18 @@ def merge_dicts(dict1, dict2, max_levels=0):
         result[key] = value
         if key in dict2:
             other_value = dict2[key]
-            if max_levels == 1 or not isinstance(
+            if type(other_value) != type(value):
+                raise TypeError()
+            if max_levels != 1 and isinstance(
                     other_value, types.DictionaryType):
-                result[key] = other_value
-            else:
                 result[key] = merge_dicts(
                     value, other_value,
                     0 if max_levels == 0 else max_levels - 1)
+            elif max_levels != 1 and isinstance(
+                    other_value, types.ListType):
+                result[key] = merge_lists(value, other_value)
+            else:
+                result[key] = other_value
     for key, value in dict2.items():
         if key not in result:
             result[key] = value
