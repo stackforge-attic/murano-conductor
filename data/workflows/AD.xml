@@ -8,7 +8,7 @@
 	<rule match="$.services.activeDirectories[*].units[?(@.state.hostname and not @.state.instanceName)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Creating instance <select path="name"/></parameter>
+			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<update-cf-stack template="Windows">
 			<parameter name="mappings">
@@ -25,7 +25,6 @@
 			</parameter>
 			<parameter name="arguments">
 				<map>
-					<argument name="KeyName">murano-keys</argument>
 					<argument name="InstanceType">m1.medium</argument>
 					<argument name="ImageName">ws-2012-full</argument>
 				</map>
@@ -35,7 +34,7 @@
 				<set path="state.instanceName"><select path="name"/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Instance <select path="name"/> created</parameter>
+					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
 				</report>
 			</success>
 		</update-cf-stack>
@@ -90,7 +89,7 @@
 	<rule match="$.services.activeDirectories[?(@.state.primaryDc is None)].units[?(@.state.instanceName and @.isMaster)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Creating Primary Domain Controller on unit <select path="name"/></parameter>
+			<parameter name="text">Creating Primary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<send-command template="CreatePrimaryDC">
 			<parameter name="unit">
@@ -172,7 +171,7 @@
 					</set>
 					<report entity="unit">
 						<parameter name="id"><select path="id" source="unit"/></parameter>
-						<parameter name="text">Unit <select path="name" source="unit"/> has joined domain <select path="domain"/></parameter>
+						<parameter name="text">Unit <select path="state.hostname" source="unit"/> <select path="name" source="unit"/> has joined domain <select path="domain"/></parameter>
 					</report>
 				</success>
 			</send-command>
@@ -183,7 +182,7 @@
 	<rule match="$.services.activeDirectories[*].units[?(@.state.domain and not @.isMaster and not @.state.installed)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Creating Secondary Domain Controller on unit <select path="name"/></parameter>
+			<parameter name="text">Creating Secondary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<send-command template="CreateSecondaryDC">
 			<parameter name="unit">

@@ -3,6 +3,7 @@
          "$lbName" : {
              "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
              "Properties" : {
+                "AvailabilityZones" : { "Fn::GetAZs" : "" },
                 "Instances" : [{"Ref": "$instanceName"}],
                 "Listeners" : [ {
                     "LoadBalancerPort" : "$lbPort",
