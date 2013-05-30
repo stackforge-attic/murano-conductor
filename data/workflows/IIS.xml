@@ -13,11 +13,11 @@
 		<update-cf-stack template="Windows">
 			<parameter name="mappings">
 				<map>
-					<mapping name="instanceName"><select path="::name"/>-<select path="name"/></mapping>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
-							<parameter name="unit"><select path="name"/></parameter>
+							<parameter name="unit"><select path="id"/></parameter>
 							<parameter name="service"><select path="::id"/></parameter>
 						</prepare-user-data>
 					</mapping>
@@ -43,8 +43,8 @@
 
 	<rule match="$.services.webServers[?(@.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]">
 		<send-command template="SetPassword">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>
@@ -71,8 +71,8 @@
 			<parameter name="text">Creating IIS Web Server on unit <select path="name"/></parameter>
 		</report>
 		<send-command template="InstallIIS">
-			<parameter name="host">
-				<select path="name"/>
+			<parameter name="unit">
+				<select path="id"/>
 			</parameter>
 			<parameter name="service">
 				<select path="::id"/>
