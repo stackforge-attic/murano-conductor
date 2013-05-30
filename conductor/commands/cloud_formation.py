@@ -59,8 +59,8 @@ class HeatExecutor(CommandBase):
         if command == 'CreateOrUpdate':
             return self._execute_create_update(
                 kwargs['template'],
-                kwargs['mappings'],
-                kwargs['arguments'],
+                kwargs.get('mappings', {}),
+                kwargs.get('arguments', {}),
                 callback)
         elif command == 'Delete':
             return self._execute_delete(callback)
@@ -116,23 +116,24 @@ class HeatExecutor(CommandBase):
                 template=template)
             log.debug(
                 'Waiting for the stack {0} to be update'.format(self._stack))
-            self._wait_state('UPDATE_COMPLETE')
+            outs = self._wait_state('UPDATE_COMPLETE')
             log.info('Stack {0} updated'.format(self._stack))
         else:
             self._heat_client.stacks.create(
                 stack_name=self._stack,
                 parameters=arguments,
                 template=template)
+
             log.debug('Waiting for the stack {0} to be create'.format(
                 self._stack))
-            self._wait_state('CREATE_COMPLETE')
+            outs = self._wait_state('CREATE_COMPLETE')
             log.info('Stack {0} created'.format(self._stack))
 
         pending_list = self._update_pending_list
         self._update_pending_list = []
 
         for item in pending_list:
-            item['callback'](True)
+            item['callback'](outs)
 
         return True
 
@@ -177,9 +178,11 @@ class HeatExecutor(CommandBase):
 
         while True:
             try:
-                status = self._heat_client.stacks.get(
-                    stack_id=self._stack).stack_status
+                stack_info = self._heat_client.stacks.get(
+                    stack_id=self._stack)
+                status = stack_info.stack_status
             except heatclient.exc.HTTPNotFound:
+                stack_info = None
                 status = ''
 
             if 'IN_PROGRESS' in status:
@@ -187,4 +190,9 @@ class HeatExecutor(CommandBase):
                 continue
             if status not in states:
                 raise EnvironmentError()
-            return
+
+            try:
+                return dict([(t['output_key'], t['output_value'])
+                             for t in stack_info.outputs])
+            except Exception:
+                return  {}
