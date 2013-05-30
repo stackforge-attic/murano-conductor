@@ -27,7 +27,7 @@ def update_cf_stack(engine, context, body, template, result=None, **kwargs):
 
     def callback(result_value):
         if result is not None:
-            context[result] = result_value['Result']
+            context[result] = result_value
         success_handler = body.find('success')
         if success_handler is not None:
             engine.evaluate_content(success_handler, context)

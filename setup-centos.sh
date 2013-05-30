@@ -14,6 +14,7 @@
 #    under the License.
 #
 #    CentOS script
+
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
 PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python"
@@ -22,9 +23,6 @@ GIT_CLONE_DIR=`echo $SERVICE_CONTENT_DIRECTORY | sed -e "s/$SERVICE_SRV_NAME//"`
 ETC_CFG_DIR="/etc/$SERVICE_SRV_NAME"
 SERVICE_CONFIG_FILE_PATH="$ETC_CFG_DIR/conductor.conf"
 
-if [ -z "$SERVICE_EXEC_PATH" ];then
-	SERVICE_EXEC_PATH="/usr/bin/conductor"
-fi
 # Functions
 # Loger function
 log()
@@ -95,14 +93,30 @@ CLONE_FROM_GIT=$1
 # Setupping...
 	log "Running setup.py"
 	MRN_CND_SPY=$GIT_CLONE_DIR/$SERVICE_SRV_NAME/setup.py
-	log $MRN_CND_SPY
 	if [ -e $MRN_CND_SPY ];then
 		chmod +x $MRN_CND_SPY
 		log "$MRN_CND_SPY output:_____________________________________________________________"
-		cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY install
+		#cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY install
+		#if [ $? -ne 0 ]; then
+		#	log "\"$MRN_CND_SPY\" python setup FAILS, exiting!"
+		#	exit 1
+		#fi
+## Setup through pip		
+		# Creating tarball
+		#cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY sdist
+		cd $SERVICE_CONTENT_DIRECTORY && $MRN_CND_SPY sdist
 		if [ $? -ne 0 ];then
-			log "Install of \"$MRN_CND_SPY\" FAILS, exiting!!!"
-			exit
+			log "\"$MRN_CND_SPY\" tarball creation FAILS, exiting!!!"
+			exit 1
+		fi
+		# Running tarball install
+		#TRBL_FILE=$(basename `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/*.tar.gz`)
+		#pip install $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/$TRBL_FILE
+		TRBL_FILE=$(basename `ls $SERVICE_CONTENT_DIRECTORY/dist/*.tar.gz`)
+		pip install $SERVICE_CONTENT_DIRECTORY/dist/$TRBL_FILE
+		if [ $? -ne 0 ];then
+			log "pip install \"$TRBL_FILE\" FAILS, exiting!!!"
+			exit 1
 		fi
 	else
 		log "$MRN_CND_SPY not found!"
@@ -118,16 +132,39 @@ CLONE_FROM_GIT=$1
 	fi
 # making sample configs
 	log "Making sample configuration files at \"$ETC_CFG_DIR\""
-	for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
+	#for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
+	for file in `ls $SERVICE_CONTENT_DIRECTORY/etc`
 	do
-		cp -f "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc/$file" "$ETC_CFG_DIR/$file.sample"
+		#cp -f "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc/$file" "$ETC_CFG_DIR/$file.sample"
+		cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
 	done
+# making templates data
+	log "Making templates directory"
+	#cp -f -R  "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/data" "$ETC_CFG_DIR/"
+	cp -f -R  "$SERVICE_CONTENT_DIRECTORY/data" "$ETC_CFG_DIR/"
+}
+
+# searching for service executable in path
+get_service_exec_path()
+{
+	if [ -z "$SERVICE_EXEC_PATH" ]; then
+		SERVICE_EXEC_PATH=`which conductor`
+		if [ $? -ne 0 ]; then
+			log "Can't find \"conductor ($SERVICE_SRV_NAME)\", please install the \"$SERVICE_SRV_NAME\" by running \"$(basename "$0") install\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!"
+			exit 1
+		fi
+	else
+		if [ ! -x "$SERVICE_EXEC_PATH" ]; then
+			log "\"$SERVICE_EXEC_PATH\" in not executable, please install the \"conductor ($SERVICE_SRV_NAME)\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!"
+			exit 1
+		fi
+	fi
 }
 
 # inject init
 injectinit()
 {
-echo "description \"Murano Conductor service\"
+echo "description \"$SERVICE_SRV_NAME service\"
 author \"Igor Yozhikov <iyozhikov@mirantis.com>\"
 start on runlevel [2345]
 stop on runlevel [!2345]
@@ -148,8 +185,18 @@ purgeinit()
 # uninstall
 uninst()
 {
-	rm -f $SERVICE_EXEC_PATH
-	rm -rf $SERVICE_CONTENT_DIRECTORY
+	#rm -f $SERVICE_EXEC_PATH
+	#rm -rf $SERVICE_CONTENT_DIRECTORY
+	# Uninstall trough  pip
+	# looking up for python package installed
+	PYPKG=`echo $SERVICE_SRV_NAME | sed -e 's/murano-//'`
+	pip freeze | grep $PYPKG
+	if [ $? -eq 0 ]; then
+		log "Removing package \"$PYPKG\" with pip"
+		pip uninstall $PYPKG --yes
+	else
+		log "Python package \"$PYPKG\" not found"
+	fi
 }
 
 # postinstall
@@ -161,11 +208,7 @@ postinst()
 COMMAND="$1"
 case $COMMAND in
 	inject-init )
-	    # searching for daemon PATH
-	    if [ ! -x $SERVICE_EXEC_PATH ]; then
-	        log "Can't find \"conductor\" in at \"$SERVICE_EXEC_PATH\", please install the \"$SERVICE_SRV_NAME\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!!!"
-	        exit
-	    fi
+	    get_service_exec_path
 	    log "Injecting \"$SERVICE_SRV_NAME\" to init..."
 	    injectinit
 	    postinst
@@ -173,12 +216,14 @@ case $COMMAND in
 
 	install )
 		inst
+		get_service_exec_path
 		injectinit
 		postinst
 		;;
 
 	installfromgit )
 		inst "yes"
+		get_service_exec_path
 		injectinit
 		postinst
 		;;
@@ -197,7 +242,7 @@ case $COMMAND in
 		;;
 
 	* )
-		echo "Usage: $(basename "$0") install | installfromgit | uninstall | inject-init | purge-init"
+		echo "Usage: $(basename "$0") command \nCommands:\n\tinstall - Install $SERVICE_SRV_NAME software\n\tuninstall - Uninstall $SERVICE_SRV_NAME software\n\tinject-init - Add $SERVICE_SRV_NAME to the system start-up\n\tpurge-init - Remove $SERVICE_SRV_NAME from the system start-up"
 		exit 1
 		;;
 esac

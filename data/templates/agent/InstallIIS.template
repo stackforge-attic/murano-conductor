@@ -16,7 +16,7 @@
       }
     },
     {
-      "Name": "Install-WebServer",
+      "Name": "Install-WebServerComponents",
       "Arguments": {
         "PrerequisitesPath": "C:\\Prerequisites"
       }

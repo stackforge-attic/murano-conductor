@@ -19,7 +19,7 @@ from openstack.common import log as logging
 log = logging.getLogger(__name__)
 
 
-def send_command(engine, context, body, template, service, host, mappings=None,
+def send_command(engine, context, body, template, service, unit, mappings=None,
                  result=None, **kwargs):
     if not mappings:
         mappings = {}
@@ -28,7 +28,7 @@ def send_command(engine, context, body, template, service, host, mappings=None,
     def callback(result_value):
         log.info(
             'Received result from {2} for {0}: {1}'.format(
-                template, result_value, host))
+                template, result_value, unit))
         if result is not None:
             context[result] = result_value['Result']
 
@@ -38,7 +38,7 @@ def send_command(engine, context, body, template, service, host, mappings=None,
 
     command_dispatcher.execute(
         name='agent', template=template, mappings=mappings,
-        host=host, service=service, callback=callback)
+        unit=unit, service=service, callback=callback)
 
 
 xml_code_engine.XmlCodeEngine.register_function(send_command, "send-command")
