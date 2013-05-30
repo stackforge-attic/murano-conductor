@@ -171,28 +171,39 @@ class HeatExecutor(CommandBase):
             return {}, {}
 
     def _wait_state(self, state):
-        if isinstance(state, types.ListType):
-            states = state
-        else:
-            states = [state]
+        tries = 4
+        delay = 1
+        while tries > 0:
+            if isinstance(state, types.ListType):
+                states = state
+            else:
+                states = [state]
 
-        while True:
-            try:
-                stack_info = self._heat_client.stacks.get(
-                    stack_id=self._stack)
-                status = stack_info.stack_status
-            except heatclient.exc.HTTPNotFound:
-                stack_info = None
-                status = ''
+            while True:
+                try:
+                    stack_info = self._heat_client.stacks.get(
+                        stack_id=self._stack)
+                    status = stack_info.stack_status
+                    tries = 4
+                    delay = 1
+                except heatclient.exc.HTTPNotFound:
+                    stack_info = None
+                    status = ''
+                except Exception:
+                    tries -= 1
+                    delay *= 2
+                    eventlet.sleep(delay)
+                    break
 
-            if 'IN_PROGRESS' in status:
-                eventlet.sleep(1)
-                continue
-            if status not in states:
-                raise EnvironmentError()
+                if 'IN_PROGRESS' in status:
+                    eventlet.sleep(1)
+                    continue
+                if status not in states:
+                    raise EnvironmentError()
 
-            try:
-                return dict([(t['output_key'], t['output_value'])
-                             for t in stack_info.outputs])
-            except Exception:
-                return {}
+                try:
+                    return dict([(t['output_key'], t['output_value'])
+                                 for t in stack_info.outputs])
+                except Exception:
+                    return {}
+        return {}
