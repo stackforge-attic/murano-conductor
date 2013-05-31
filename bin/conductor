@@ -15,16 +15,18 @@
 # limitations under the License.
 
 import sys
-
+import os
 
 from conductor import config
 from conductor.openstack.common import log
 from conductor.openstack.common import service
 from conductor.app import ConductorWorkflowService
 
+
 if __name__ == '__main__':
     try:
         config.parse_args()
+        os.chdir(config.CONF.data_dir)
         log.setup('conductor')
         launcher = service.ServiceLauncher()
         launcher.launch_service(ConductorWorkflowService())
