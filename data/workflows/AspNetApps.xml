@@ -52,9 +52,7 @@
 			</parameter>
 			<success>
 				<set path="state.registeredWithLB"><true/></set>
-				<set path="::loadBalancerIP">
-					<select source="outputs" path="LoadBalancerIP"/>
-				</set>
+				<set path="::uri">http://<select source="outputs" path="LoadBalancerIP"/>:<select path="::loadBalancerPort"/></set>
 			</success>
 		</update-cf-stack>
 	</rule>
