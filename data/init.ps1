@@ -1,7 +1,7 @@
 #ps1
 
 $WindowsAgentConfigBase64 = '%WINDOWS_AGENT_CONFIG_BASE64%'
-$WindowsAgentConfigFile = "C:\Murano\Agent\MuranoAgent\WindowsAgent.exe.config"
+$WindowsAgentConfigFile = "C:\Murano\Agent\WindowsAgent.exe.config"
 
 $NewComputerName = '%INTERNAL_HOSTNAME%'
 $MuranoFileShare = '%MURANO_SERVER_ADDRESS%\share'
