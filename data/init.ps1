@@ -2,6 +2,7 @@
 
 $WindowsAgentConfigBase64 = '%WINDOWS_AGENT_CONFIG_BASE64%'
 $WindowsAgentConfigFile = "C:\Murano\Agent\WindowsAgent.exe.config"
+$WindowsAgentLogFile = "C:\Murano\Agent\log.txt"
 
 $NewComputerName = '%INTERNAL_HOSTNAME%'
 $MuranoFileShare = '%MURANO_SERVER_ADDRESS%\share'
@@ -14,6 +15,7 @@ Write-Log "Updating Murano Windows Agent."
 Stop-Service "Murano Agent"
 Backup-File $WindowsAgentConfigFile
 Remove-Item $WindowsAgentConfigFile -Force
+Remove-Item $WindowsAgentLogFile -Force
 ConvertFrom-Base64String -Base64String $WindowsAgentConfigBase64 -Path $WindowsAgentConfigFile
 Exec sc.exe 'config','"Murano Agent"','start=','delayed-auto'
 Write-Log "Service has been updated."
