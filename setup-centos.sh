@@ -14,6 +14,7 @@
 #    under the License.
 #
 #    CentOS script
+
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
 PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python"
@@ -102,14 +103,17 @@ CLONE_FROM_GIT=$1
 		#fi
 ## Setup through pip		
 		# Creating tarball
-		cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY sdist
+		#cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY sdist
+		cd $SERVICE_CONTENT_DIRECTORY && $MRN_CND_SPY sdist
 		if [ $? -ne 0 ];then
 			log "\"$MRN_CND_SPY\" tarball creation FAILS, exiting!!!"
 			exit 1
 		fi
 		# Running tarball install
-		TRBL_FILE=$(basename `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/*.tar.gz`)
-		pip install $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/$TRBL_FILE
+		#TRBL_FILE=$(basename `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/*.tar.gz`)
+		#pip install $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/$TRBL_FILE
+		TRBL_FILE=$(basename `ls $SERVICE_CONTENT_DIRECTORY/dist/*.tar.gz`)
+		pip install $SERVICE_CONTENT_DIRECTORY/dist/$TRBL_FILE
 		if [ $? -ne 0 ];then
 			log "pip install \"$TRBL_FILE\" FAILS, exiting!!!"
 			exit 1
@@ -128,13 +132,16 @@ CLONE_FROM_GIT=$1
 	fi
 # making sample configs
 	log "Making sample configuration files at \"$ETC_CFG_DIR\""
-	for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
+	#for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
+	for file in `ls $SERVICE_CONTENT_DIRECTORY/etc`
 	do
-		cp -f "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc/$file" "$ETC_CFG_DIR/$file.sample"
+		#cp -f "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc/$file" "$ETC_CFG_DIR/$file.sample"
+		cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
 	done
 # making templates data
 	log "Making templates directory"
-	cp -f -R  "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/data" "$ETC_CFG_DIR/"
+	#cp -f -R  "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/data" "$ETC_CFG_DIR/"
+	cp -f -R  "$SERVICE_CONTENT_DIRECTORY/data" "$ETC_CFG_DIR/"
 }
 
 # searching for service executable in path
