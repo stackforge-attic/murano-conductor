@@ -20,11 +20,11 @@ ConvertFrom-Base64String -Base64String $WindowsAgentConfigBase64 -Path $WindowsA
 Exec sc.exe 'config','"Murano Agent"','start=','delayed-auto'
 Write-Log "Service has been updated."
 
-Write-Log "Adding environment variable 'MuranoFileShare' ..."
-[Environment]::SetEnvironmentVariable('MuranoFileShare', $MuranoFileShare, 'System')
+Write-Log "Adding environment variable 'MuranoFileShare' = '$MuranoFileShare' ..."
+[Environment]::SetEnvironmentVariable('MuranoFileShare', $MuranoFileShare, [EnvironmentVariableTarget]::Machine)
 Write-Log "Environment variable added."
 
-Write-Log "Renaming computer ..."
+Write-Log "Renaming computer to '$NewComputerName' ..."
 Rename-Computer -NewName $NewComputerName | Out-Null
 Write-Log "New name assigned, restart required."
 $RestartRequired = $true
