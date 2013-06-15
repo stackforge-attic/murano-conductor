@@ -5,7 +5,7 @@ $WindowsAgentConfigFile = "C:\Murano\Agent\WindowsAgent.exe.config"
 $WindowsAgentLogFile = "C:\Murano\Agent\log.txt"
 
 $NewComputerName = '%INTERNAL_HOSTNAME%'
-$MuranoFileShare = '%MURANO_SERVER_ADDRESS%\share'
+$MuranoFileShare = '\\%MURANO_SERVER_ADDRESS%\share'
 
 $RestartRequired = $false
 
