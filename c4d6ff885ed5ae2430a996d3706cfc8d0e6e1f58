@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Timur <tnurlygayanov@mirantis.com>
+Code-Review+2: Timur <tnurlygayanov@mirantis.com>
+Verified+1: murano-ci
+Submitted-by: Jenkins
+Submitted-at: Mon, 17 Jun 2013 21:16:35 +0000
+Reviewed-on: https://review.openstack.org/33346
+Project: stackforge/murano-conductor
+Branch: refs/heads/release-0.1
