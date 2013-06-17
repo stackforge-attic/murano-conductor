@@ -4,6 +4,12 @@
   ],
   "Commands": [
     {
+      "Name": "Import-Module",
+      "Arguments": {
+         "Name": "CoreFunctions",
+      }
+    },
+    {
       "Name": "Deploy-WebApp",
       "Arguments": {
         "URL": "$repository"
