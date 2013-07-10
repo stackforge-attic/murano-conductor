@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import types
+import deep
 
 
 def transform_json(json, mappings):
@@ -42,7 +43,16 @@ def transform_json(json, mappings):
 
 
 def merge_lists(list1, list2):
-    return list1 + list2
+    result = []
+    for item in list1 + list2:
+        exists = False
+        for old_item in result:
+            if deep.diff(item, old_item) is None:
+                exists = True
+                break
+        if not exists:
+            result.append(item)
+    return result
 
 
 def merge_dicts(dict1, dict2, max_levels=0):
