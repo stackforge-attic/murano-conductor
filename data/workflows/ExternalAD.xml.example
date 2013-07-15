@@ -1,0 +1,74 @@
+<workflow>
+	<rule match="$.services[*][?(@.availabilityZone)].units[?(@.state.instanceName and @.state.hostname and not @.domain)]">
+        <set path="#externalADmap">
+            <map>
+
+
+ <!--  ======================================================================= -->
+ <!--  Specify here parameters of domain controllers at each availability zone -->
+ <!--  ======================================================================= -->
+
+        <mapping name="AvailabilityZone1">
+            <map>
+                <mapping name="domain">domain1</mapping>
+                <mapping name="domainPassword">password1</mapping>
+                <mapping name="dnsIp">ip1</mapping>
+            </map>
+        </mapping>
+
+        <mapping name="AvailabilityZone2">
+            <map>
+                <mapping name="domain">domain2</mapping>
+                <mapping name="domainPassword">password2</mapping>
+                <mapping name="dnsIp">ip2</mapping>
+            </map>
+        </mapping>
+
+ <!--  ======================================================================= -->
+
+
+            </map>
+        </set>
+		<set path="#ad">
+			<select source="externalADmap">
+                <parameter name="path"><select path="::availabilityZone"/></parameter>
+			</select>
+		</set>
+		<rule>
+			<parameter name="match">$[?(@.state.domain != '<select path="domain" source="ad"/>')]</parameter>
+
+			<send-command template="JoinDomain">
+				<parameter name="unit">
+					<select path="id"/>
+				</parameter>
+				<parameter name="service">
+					<select path="::id"/>
+				</parameter>
+				<parameter name="mappings">
+					<map>
+						<mapping name="domain">
+							<select path="domain" source="ad"/>
+						</mapping>
+						<mapping name="domainPassword">
+							<select path="domainPassword" source="ad"/>
+						</mapping>
+						<mapping name="dnsIp">
+							<select path="dnsIp" source="ad"/>
+						</mapping>
+					</map>
+				</parameter>
+
+				<success>
+					<set path="state.domain">
+						<select path="domain" source="ad"/>
+					</set>
+					<report entity="unit">
+						<parameter name="id"><select path="id" source="unit"/></parameter>
+						<parameter name="text">Unit <select path="state.hostname"/> <select path="name"/> has joined domain <select path="domain" source="ad"/></parameter>
+					</report>
+				</success>
+			</send-command>
+		</rule>
+	</rule>
+
+ </workflow>
