@@ -8,19 +8,23 @@
  <!--  Specify here parameters of domain controllers at each availability zone -->
  <!--  ======================================================================= -->
 
-        <mapping name="AvailabilityZone1">
+        <mapping name="Region1">
             <map>
                 <mapping name="domain">domain1</mapping>
+                <mapping name="domainUser">Administrator</mapping>
                 <mapping name="domainPassword">password1</mapping>
                 <mapping name="dnsIp">ip1</mapping>
+                <mapping name="ou"></mapping>
             </map>
         </mapping>
 
-        <mapping name="AvailabilityZone2">
+        <mapping name="Region2">
             <map>
                 <mapping name="domain">domain2</mapping>
+                <mapping name="domainUser">Administrator</mapping>
                 <mapping name="domainPassword">password2</mapping>
                 <mapping name="dnsIp">ip2</mapping>
+                <mapping name="ou"></mapping>
             </map>
         </mapping>
 
@@ -49,11 +53,17 @@
 						<mapping name="domain">
 							<select path="domain" source="ad"/>
 						</mapping>
+						<mapping name="domainUser">
+							<select path="domainUser" source="ad"/>
+						</mapping>
 						<mapping name="domainPassword">
 							<select path="domainPassword" source="ad"/>
 						</mapping>
 						<mapping name="dnsIp">
 							<select path="dnsIp" source="ad"/>
+						</mapping>
+						<mapping name="ouPath">
+							<select path="ou" source="ad"/>
 						</mapping>
 					</map>
 				</parameter>

@@ -162,6 +162,8 @@
 						<mapping name="dnsIp">
 							<select path="state.primaryDcIp"/>
 						</mapping>
+						<mapping name="domainUser">Administrator</mapping>
+						<mapping name="ouPath"></mapping>
 					</map>
 				</parameter>
 
