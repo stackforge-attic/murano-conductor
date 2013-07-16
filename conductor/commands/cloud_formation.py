@@ -101,7 +101,7 @@ class HeatExecutor(CommandBase):
 
         for t in self._update_pending_list:
             template = conductor.helpers.merge_dicts(
-                template, t['template'], max_levels=2)
+                template, t['template'])
             arguments = conductor.helpers.merge_dicts(
                 arguments, t['arguments'], max_levels=1)
 
