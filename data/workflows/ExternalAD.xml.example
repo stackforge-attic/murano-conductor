@@ -1,5 +1,5 @@
 <workflow>
-	<rule match="$.services[*][?(@.availabilityZone)].units[?(@.state.instanceName and @.state.hostname and not @.domain)]">
+	<rule match="$.services[?(@.type != 'activeDirectory' and @.availabilityZone)].units[?(@.state.instanceName and @.state.hostname and not @.domain)]">
         <set path="#externalADmap">
             <map>
 

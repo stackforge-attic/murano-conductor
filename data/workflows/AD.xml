@@ -1,11 +1,11 @@
 <workflow>
-	<rule match="$.services.activeDirectories[?(@.domain)].units[?(not @.isMaster)]">
+	<rule match="$.services[?(@.type == 'activeDirectory' and @.domain)].units[?(not @.isMaster)]">
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
 	</rule>
 
-	<rule match="$.services.activeDirectories[*].units[?(@.state.hostname and not @.state.instanceName)]">
+	<rule match="$.services[?(@.type == 'activeDirectory')].units[?(@.state.hostname and not @.state.instanceName)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -40,7 +40,7 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services.activeDirectories[*].units[?(@.state.instanceName and @.adminPassword and @.adminPassword != @.state.adminPassword)]">
+	<rule match="$.services[?(@.type == 'activeDirectory')].units[?(@.state.instanceName and @.adminPassword and @.adminPassword != @.state.adminPassword)]">
 		<send-command template="SetPassword">
 			<parameter name="unit">
 				<select path="id"/>
@@ -63,7 +63,7 @@
 		</send-command>
 	</rule>
 
-	<rule match="$.services.activeDirectories[?(@.adminPassword and @.adminPassword != @.state.domainAdminPassword)].units[?(@.state.instanceName and @.isMaster)]">
+	<rule match="$.services[?(@.type == 'activeDirectory' and @.adminPassword and @.adminPassword != @.state.domainAdminPassword)].units[?(@.state.instanceName and @.isMaster)]">
 		<send-command template="SetPassword">
 			<parameter name="unit">
 				<select path="id"/>
@@ -86,7 +86,7 @@
 		</send-command>
 	</rule>
 
-	<rule match="$.services.activeDirectories[?(@.state.primaryDc is None)].units[?(@.state.instanceName and @.isMaster)]">
+	<rule match="$.services.activeDirectories[?(@.type == 'activeDirectory' and @.state.primaryDc is None)].units[?(@.state.instanceName and @.isMaster)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating Primary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -118,7 +118,7 @@
 		</send-command>
 	</rule>
 
-	<rule match="$.services.activeDirectories[?(@.state.primaryDc and not @.state.primaryDcIp)].units[?(@.state.instanceName and @.isMaster)]">
+	<rule match="$.services[?(@.type == 'activeDirectory' and @.state.primaryDc and not @.state.primaryDcIp)].units[?(@.state.instanceName and @.isMaster)]">
 		<send-command template="AskDnsIp" result="ip">
 			<parameter name="unit">
 				<select path="id"/>
@@ -142,7 +142,7 @@
 			<select path="::"/>
 		</set>
 		<rule>
-			<parameter name="match">/$.services.activeDirectories[?(@.domain == '<select path="domain"/>' and @.state.primaryDcIp)]</parameter>
+			<parameter name="match">/$.services[?(@.type == 'activeDirectory' and @.domain == '<select path="domain"/>' and @.state.primaryDcIp)]</parameter>
 
 			<send-command template="JoinDomain">
 				<parameter name="unit">
@@ -181,7 +181,7 @@
 	</rule>
 
 
-	<rule match="$.services.activeDirectories[*].units[?(@.state.domain and not @.isMaster and not @.state.installed)]">
+	<rule match="$.services[?(@.type == 'activeDirectory')].units[?(@.state.domain and not @.isMaster and not @.state.installed)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating Secondary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>

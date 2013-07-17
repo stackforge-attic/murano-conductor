@@ -1,6 +1,6 @@
 <workflow>
 
-	<rule match="$.services[*][*].units[?(@.state.hostname is None)]">
+	<rule match="$.services[*].units[?(@.state.hostname is None)]">
 		<set path="state.hostname">
 			<generate-hostname>
 				<parameter name="pattern"><select path="::unitNamingPattern"/></parameter>
@@ -10,7 +10,7 @@
 	</rule>
 
 	<rule match="$[?(not @.state.deleted)]">
-		<rule match="$.services[*][*].units[*]">
+		<rule match="$.services[*].units[*]">
 			<empty>
 				<delete-cf-stack>
 					<success>
