@@ -63,6 +63,7 @@ def prepare_user_data(context, hostname, service, unit,
 
             replacements = {
                 '%RABBITMQ_HOST%': settings.host,
+                '%RABBITMQ_PORT%': settings.port,
                 '%RABBITMQ_INPUT_QUEUE%': '-'.join(
                     ['e' + str(context['/dataSource']['id']),
                      str(service), str(unit)]).lower(),
