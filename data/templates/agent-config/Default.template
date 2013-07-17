@@ -19,6 +19,7 @@
 	</nlog>
 	<appSettings>
 		<add key="rabbitmq.host" value="%RABBITMQ_HOST%"/>
+		<add key="rabbitmq.port" value="%RABBITMQ_PORT%"/>
 		<add key="rabbitmq.user" value="%RABBITMQ_USER%"/>
 		<add key="rabbitmq.password" value="%RABBITMQ_PASSWORD%"/>
 		<add key="rabbitmq.vhost" value="%RABBITMQ_VHOST%"/>
@@ -26,6 +27,10 @@
 		<add key="rabbitmq.resultExchange" value=""/>
 		<add key="rabbitmq.resultRoutingKey" value="%RESULT_QUEUE%"/>
 		<add key="rabbitmq.durableMessages" value="true"/>
+
+		<add key="rabbitmq.ssl" value="false"/>
+		<add key="rabbitmq.allowInvalidCA" value="true"/>
+		<add key="rabbitmq.sslServerName" value=""/>
 
 	</appSettings>
 </configuration>
