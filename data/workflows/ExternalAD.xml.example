@@ -73,8 +73,8 @@
 						<select path="domain" source="ad"/>
 					</set>
 					<report entity="unit">
-						<parameter name="id"><select path="id" source="unit"/></parameter>
-						<parameter name="text">Unit <select path="state.hostname"/> <select path="name"/> has joined domain <select path="domain" source="ad"/></parameter>
+						<parameter name="id"><select path="id"/></parameter>
+						<parameter name="text">Unit <select path="state.hostname"/> (<select path="name"/>) has joined domain <select path="domain" source="ad"/></parameter>
 					</report>
 				</success>
 			</send-command>
