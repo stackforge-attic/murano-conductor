@@ -90,7 +90,7 @@ def prepare_user_data(context, hostname, service, unit,
 
 def set_config_params(template_data, replacements):
     for key in replacements:
-        template_data = template_data.replace(key, replacements[key])
+        template_data = template_data.replace(key, str(replacements[key]))
     return template_data
 
 
