@@ -86,7 +86,7 @@
 		</send-command>
 	</rule>
 
-	<rule match="$.services.activeDirectories[?(@.type == 'activeDirectory' and @.state.primaryDc is None)].units[?(@.state.instanceName and @.isMaster)]">
+	<rule match="$.services[?(@.type == 'activeDirectory' and @.state.primaryDc is None)].units[?(@.state.instanceName and @.isMaster)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating Primary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
