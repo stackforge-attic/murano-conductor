@@ -95,21 +95,26 @@ class Workflow(object):
             return position + suffix.split('.')
 
     @staticmethod
-    def _select_func(context, path='', source=None, **kwargs):
+    def _select_func(context, path='', source=None, default=None, **kwargs):
 
+        result = None
         if path.startswith('##'):
             config = context['/config']
-            return config[path[2:]]
+            result = config[path[2:]]
         elif path.startswith('#'):
-            return context[path[1:]]
-
-        if source is not None:
-            return Workflow._get_path(
+            result = context[path[1:]]
+        elif source is not None:
+            result = Workflow._get_path(
                 context[source], path.split('.'))
         else:
-            return Workflow._get_path(
+            result = Workflow._get_path(
                 context['/dataSource'],
                 Workflow._correct_position(path, context))
+
+        if not result and default is not None:
+            result = default
+
+        return result
 
     @staticmethod
     def _set_func(path, context, body, engine, target=None, **kwargs):
