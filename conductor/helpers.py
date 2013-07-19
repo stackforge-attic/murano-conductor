@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import types
 import deep
+import types
 
 
 def transform_json(json, mappings):
@@ -87,3 +87,16 @@ def find(f, seq):
             return item, index
         index += 1
     return None, -1
+
+
+def str2unicode(obj):
+    if isinstance(obj, str):
+        return unicode(obj)
+    elif isinstance(obj, types.DictionaryType):
+        result = {}
+        for key, value in obj.items():
+            result[str2unicode(key)] = str2unicode(value)
+        return result
+    elif isinstance(obj, types.ListType):
+        return [str2unicode(t) for t in obj]
+    return obj
