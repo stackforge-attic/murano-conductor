@@ -59,8 +59,8 @@ class HeatExecutor(CommandBase):
         if command == 'CreateOrUpdate':
             return self._execute_create_update(
                 kwargs['template'],
-                kwargs.get('mappings') or {},
-                kwargs.get('arguments') or {},
+                conductor.helpers.str2unicode(kwargs.get('mappings') or {}),
+                conductor.helpers.str2unicode(kwargs.get('arguments') or {}),
                 callback)
         elif command == 'Delete':
             return self._execute_delete(callback)
