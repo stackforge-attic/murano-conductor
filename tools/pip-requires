@@ -5,7 +5,7 @@ puka
 Paste
 PasteDeploy
 iso8601>=0.1.4
-python-heatclient
+python-heatclient==0.2.1
 
 #http://tarballs.openstack.org/oslo-config/oslo-config-2013.1b4.tar.gz#egg=oslo-config
 oslo.config
