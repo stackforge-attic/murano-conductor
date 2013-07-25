@@ -25,25 +25,35 @@ from commands.dispatcher import CommandDispatcher
 from openstack.common import log as logging
 from config import Config
 import reporting
-import rabbitmq
+from muranocommon.mq import MqClient, Message
+from conductor import config as cfg
 
 import windows_agent
 import cloud_formation
 
 config = Config(sys.argv[1] if len(sys.argv) > 1 else None)
 
+rabbitmq = cfg.CONF.rabbitmq
 log = logging.getLogger(__name__)
+
+CONNECTION_PARAMS = {
+    'login': rabbitmq.login,
+    'password': rabbitmq.password,
+    'host': rabbitmq.host,
+    'port': rabbitmq.port,
+    'virtual_host': rabbitmq.virtual_host
+}
 
 
 def task_received(task, message_id):
-    with rabbitmq.RmqClient() as rmqclient:
+    with MqClient(**CONNECTION_PARAMS) as mq:
         try:
             log.info('Starting processing task {0}: {1}'.format(
                 message_id, anyjson.dumps(task)))
-            reporter = reporting.Reporter(rmqclient, message_id, task['id'])
+            reporter = reporting.Reporter(mq, message_id, task['id'])
 
             command_dispatcher = CommandDispatcher(
-                'e' + task['id'], rmqclient, task['token'], task['tenant_id'])
+                'e' + task['id'], mq, task['token'], task['tenant_id'])
             workflows = []
             for path in glob.glob("data/workflows/*.xml"):
                 log.debug('Loading XML {0}'.format(path))
@@ -69,11 +79,11 @@ def task_received(task, message_id):
             command_dispatcher.close()
         finally:
             del task['token']
-            result_msg = rabbitmq.Message()
+            result_msg = Message()
             result_msg.body = task
             result_msg.id = message_id
 
-            rmqclient.send(message=result_msg, key='task-results')
+            mq.send(message=result_msg, key='task-results')
     log.info('Finished processing task {0}. Result = {1}'.format(
         message_id, anyjson.dumps(task)))
 
@@ -92,10 +102,10 @@ class ConductorWorkflowService(service.Service):
     def _start_rabbitmq(self):
         while True:
             try:
-                with rabbitmq.RmqClient() as rmq:
-                    rmq.declare('tasks', 'tasks')
-                    rmq.declare('task-results')
-                    with rmq.open('tasks') as subscription:
+                with MqClient(**CONNECTION_PARAMS) as mq:
+                    mq.declare('tasks', 'tasks')
+                    mq.declare('task-results')
+                    with mq.open('tasks') as subscription:
                         while True:
                             msg = subscription.get_message()
                             self.tg.add_thread(

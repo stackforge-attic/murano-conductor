@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2013 Mirantis Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +22,7 @@ from conductor.openstack.common import service
 from conductor.app import ConductorWorkflowService
 
 
-if __name__ == '__main__':
+def main():
     try:
         config.parse_args()
         os.chdir(config.CONF.data_dir)
@@ -34,3 +33,7 @@ if __name__ == '__main__':
     except RuntimeError, e:
         sys.stderr.write("ERROR: %s\n" % e)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

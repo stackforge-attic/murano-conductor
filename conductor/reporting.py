@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import xml_code_engine
-import rabbitmq
+from muranocommon.mq import Message
 
 
 class Reporter(object):
@@ -32,7 +32,7 @@ class Reporter(object):
             'environment_id': self._environment_id
         }
 
-        msg = rabbitmq.Message()
+        msg = Message()
         msg.body = body
         msg.id = self._task_id
 
