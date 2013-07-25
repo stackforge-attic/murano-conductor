@@ -26,7 +26,7 @@ import sys
 from oslo.config import cfg
 from paste import deploy
 
-from conductor.version import version_info as version
+from conductor import __version__ as version
 from ConfigParser import SafeConfigParser
 
 paste_deploy_opts = [
@@ -68,7 +68,7 @@ CONF.import_opt('syslog_log_facility', 'conductor.openstack.common.log')
 def parse_args(args=None, usage=None, default_config_files=None):
     CONF(args=args,
          project='conductor',
-         version=version.cached_version_string(),
+         version=version,
          usage=usage,
          default_config_files=default_config_files)
 
@@ -195,7 +195,7 @@ def load_paste_app(app_name=None):
 
 
 class Config(object):
-    CONFIG_PATH = './etc/app.config'
+    CONFIG_PATH = './etc/conductor.conf'
 
     def __init__(self, filename=None):
         self.config = SafeConfigParser()

@@ -2,7 +2,7 @@ import json
 import uuid
 
 from conductor.openstack.common import log as logging
-from conductor.rabbitmq import Message
+from muranocommon.mq import Message
 import conductor.helpers
 from command import CommandBase
 

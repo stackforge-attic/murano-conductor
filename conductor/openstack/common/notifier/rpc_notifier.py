@@ -16,7 +16,7 @@
 from oslo.config import cfg
 
 from conductor.openstack.common import context as req_context
-from conductor.openstack.common.gettextutils import _
+from conductor.openstack.common.gettextutils import _  # noqa
 from conductor.openstack.common import log as logging
 from conductor.openstack.common import rpc
 
@@ -31,7 +31,7 @@ CONF.register_opt(notification_topic_opt)
 
 
 def notify(context, message):
-    """Sends a notification via RPC"""
+    """Sends a notification via RPC."""
     if not context:
         context = req_context.get_admin_context()
     priority = message.get('priority',
