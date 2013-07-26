@@ -21,7 +21,7 @@ import deep
 import mock
 import mockfs
 
-from conductor.workflow import Workflow
+from muranoconductor.workflow import Workflow
 
 
 def load_sample(name):
