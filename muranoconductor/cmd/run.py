@@ -13,13 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-from muranoconductor.app import ConductorWorkflowService
+import sys
+import os
+
+from muranoconductor import config
+from muranoconductor.openstack.common import log
 from muranoconductor.openstack.common import service
+from muranoconductor.app import ConductorWorkflowService
 
 
-class TestMethodsAndClasses(unittest.TestCase):
-    def test_init_service_class(self):
+def main():
+    try:
+        config.parse_args()
+        os.chdir(config.CONF.data_dir)
+        log.setup('conductor')
         launcher = service.ServiceLauncher()
-        con = ConductorWorkflowService()
-        launcher.launch_service(con)
+        launcher.launch_service(ConductorWorkflowService())
+        launcher.wait()
+    except RuntimeError, e:
+        sys.stderr.write("ERROR: %s\n" % e)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
