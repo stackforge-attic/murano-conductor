@@ -20,7 +20,7 @@ import mock
 import mockfs
 import heatclient.exc
 
-from conductor.commands.cloud_formation import HeatExecutor
+from muranoconductor.commands.cloud_formation import HeatExecutor
 
 
 class TestHeatExecutor(unittest.TestCase):
