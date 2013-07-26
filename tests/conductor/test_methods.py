@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import unittest
-from conductor.app import ConductorWorkflowService
-from conductor.workflow import Workflow
-import conductor.xml_code_engine as engine
+from muranoconductor.app import ConductorWorkflowService
+from muranoconductor.workflow import Workflow
+import muranoconductor.xml_code_engine as engine
 
 
 class TestMethodsAndClasses(unittest.TestCase):
