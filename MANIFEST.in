@@ -1,1 +1,1 @@
-include tools/pip-requires
+include requirements.txt

@@ -28,7 +28,7 @@
 		<add key="rabbitmq.resultRoutingKey" value="%RESULT_QUEUE%"/>
 		<add key="rabbitmq.durableMessages" value="true"/>
 
-		<add key="rabbitmq.ssl" value="false"/>
+		<add key="rabbitmq.ssl" value="%RABBITMQ_SSL%"/>
 		<add key="rabbitmq.allowInvalidCA" value="true"/>
 		<add key="rabbitmq.sslServerName" value=""/>
 
