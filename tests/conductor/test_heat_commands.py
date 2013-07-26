@@ -20,7 +20,7 @@ import mock
 import mockfs
 import heatclient.exc
 
-from conductor.commands.cloud_formation import HeatExecutor
+from muranoconductor.commands.cloud_formation import HeatExecutor
 
 
 class TestHeatExecutor(unittest.TestCase):
@@ -49,7 +49,7 @@ class TestHeatExecutor(unittest.TestCase):
 
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
-    @mock.patch('conductor.config.CONF')
+    @mock.patch('muranoconductor.config.CONF')
     def test_create_stack(self, config_mock, ksclient_mock, heat_mock):
         self._init(config_mock, ksclient_mock)
         executor = HeatExecutor('stack', 'token', 'tenant_id')
@@ -88,7 +88,7 @@ class TestHeatExecutor(unittest.TestCase):
 
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
-    @mock.patch('conductor.config.CONF')
+    @mock.patch('muranoconductor.config.CONF')
     def test_update_stack(self, config_mock, ksclient_mock, heat_mock):
         self._init(config_mock, ksclient_mock)
         executor = HeatExecutor('stack', 'token', 'tenant_id')
@@ -143,7 +143,7 @@ class TestHeatExecutor(unittest.TestCase):
 
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
-    @mock.patch('conductor.config.CONF')
+    @mock.patch('muranoconductor.config.CONF')
     def test_delete_stack(self, config_mock, ksclient_mock, heat_mock):
         self._init(config_mock, ksclient_mock)
         executor = HeatExecutor('stack', 'token', 'tenant_id')
