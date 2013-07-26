@@ -156,7 +156,7 @@ CLONE_FROM_GIT=$1
 get_service_exec_path()
 {
 	if [ -z "$SERVICE_EXEC_PATH" ]; then
-		SERVICE_EXEC_PATH=`which conductor`
+		SERVICE_EXEC_PATH=`which muranoconductor`
 		if [ $? -ne 0 ]; then
 			log "Can't find \"conductor ($SERVICE_SRV_NAME)\", please install the \"$SERVICE_SRV_NAME\" by running \"$(basename "$0") install\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!"
 			exit 1

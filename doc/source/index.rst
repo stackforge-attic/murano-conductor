@@ -44,7 +44,7 @@ Configure
 
 1. Open configuration file for editing::
 
-    user@work:~/cd murano/conductor/etc && nano conductor.conf
+    user@work:~/cd murano/muranoconductor/etc && nano conductor.conf
 
 2. Configure according to you environment::
 

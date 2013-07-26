@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import unittest
-from conductor.app import ConductorWorkflowService
-from conductor.openstack.common import service
+from muranoconductor.app import ConductorWorkflowService
+from muranoconductor.openstack.common import service
 
 
 class TestMethodsAndClasses(unittest.TestCase):
