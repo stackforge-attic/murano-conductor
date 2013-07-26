@@ -1,7 +1,6 @@
 anyjson
 eventlet>=0.9.12
 jsonpath
-puka
 Paste
 PasteDeploy
 iso8601>=0.1.4
@@ -11,4 +10,4 @@ netaddr
 
 oslo.config
 deep
-http://github.com/sergmelikyan/murano-common/releases/download/0.1/muranocommon-0.1.tar.gz#egg=muranocommon-0.1
+http://github.com/sergmelikyan/murano-common/releases/download/0.2.1/muranocommon-0.2.1.tar.gz#egg=muranocommon-0.2.1
