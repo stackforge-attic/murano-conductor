@@ -74,7 +74,7 @@ copyright = u'2013, Mirantis, Inc.'
 # built documents.
 #
 # The short X.Y version.
-from conductor.version import version_info as conductor_version
+from muranoconductor.version import version_info as conductor_version
 # The full version, including alpha/beta/rc tags.
 release = conductor_version.version_string_with_vcs()
 # The short X.Y version.
