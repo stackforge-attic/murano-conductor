@@ -15,7 +15,12 @@
     "ImageName" : {
       "Description" : "Image name",
       "Type" : "String"
-    }   
+    },
+    "AvailabilityZone" : {
+      "Description" : "The Availability Zone in which to launch the instance.",
+      "Type" : "String",
+      "Default" : "nova"
+    }
   },
  
   "Resources" : {
@@ -24,6 +29,7 @@
       "Properties": {
         "InstanceType" : { "Ref" : "InstanceType" },
         "ImageId" : { "Ref" : "ImageName" },
+        "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
         "UserData": "$userData"
       }
     }

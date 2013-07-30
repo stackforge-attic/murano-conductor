@@ -5,7 +5,7 @@
 		</set>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.hostname and not @.state.instanceName)]">
+	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -26,7 +26,8 @@
 			<parameter name="arguments">
 				<map>
 					<argument name="InstanceType"><select path="::flavor" default="m1.medium"/></argument>
-					<argument name="ImageName">ws-2012-full</argument>
+					<argument name="ImageName"><select path="state.osImageName"/></argument>
+					<argument name="AvailabilityZone"><select path="::availabilityZone" default="nova"/></argument>
 				</map>
 			</parameter>
 

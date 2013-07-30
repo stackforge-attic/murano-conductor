@@ -8,7 +8,7 @@
  <!--  Specify here parameters of domain controllers at each availability zone -->
  <!--  ======================================================================= -->
 
-        <mapping name="Region1">
+        <mapping name="nova">
             <map>
                 <mapping name="domain">domain1</mapping>
                 <mapping name="domainUser">Administrator</mapping>
@@ -18,7 +18,7 @@
             </map>
         </mapping>
 
-        <mapping name="Region2">
+        <mapping name="AnotherAvailabilityZone">
             <map>
                 <mapping name="domain">domain2</mapping>
                 <mapping name="domainUser">Administrator</mapping>

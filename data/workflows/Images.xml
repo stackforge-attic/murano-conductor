@@ -1,0 +1,26 @@
+<workflow>
+	<rule match="$.services[*].units[?(not @.state.osImageName)]">
+        <set path="#osImageMap">
+            <map>
+
+ <!--  ====================================================================== -->
+ <!--  Mappings between image IDs and image file names can be configured here -->
+ <!--  ====================================================================== -->
+
+            <mapping name="win2k12full">ws-2012-full</mapping>
+
+            <!-- image to use if no image id provided -->
+            <mapping name="DEFAULT">ws-2012-full</mapping>
+
+ <!--  ====================================================================== -->
+
+            </map>
+        </set>
+		<set path="state.osImageName">
+			<select source="osImageMap">
+                <parameter name="path"><select path="::osImage" default="DEFAULT"/></parameter>
+			</select>
+		</set>
+    </rule>
+
+ </workflow>
