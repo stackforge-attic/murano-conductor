@@ -13,8 +13,8 @@
 #    under the License.
 
 import gettext
-gettext.install('conductor', './conductor/locale', unicode=1)
+gettext.install('muranoconductor', './muranoconductor/locale', unicode=1)
 
 from pbr import version
-__version_info = version.VersionInfo('conductor')
+__version_info = version.VersionInfo('murano-conductor')
 __version__ = __version_info.cached_version_string()
