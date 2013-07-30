@@ -15,6 +15,7 @@
 
 import glob
 import sys
+import traceback
 
 import anyjson
 import eventlet
@@ -76,6 +77,7 @@ class ConductorWorkflowService(service.Service):
     def _task_received(self, message):
         task = message.body or {}
         message_id = message.id
+        exceptions = []
         with self.create_rmq_client() as mq:
             try:
                 log.info('Starting processing task {0}: {1}'.format(
@@ -105,16 +107,19 @@ class ConductorWorkflowService(service.Service):
                             break
                     except Exception as ex:
                         log.exception(ex)
+                        exceptions.append((ex.message, traceback.format_exc()))
                         break
 
                 command_dispatcher.close()
             except Exception as e:
                 log.exception(e)
+                exceptions.append(e)
             finally:
                 if 'token' in task:
                     del task['token']
                 result_msg = Message()
-                result_msg.body = task
+                result_msg.body = {'task': task,
+                                   'exceptions': exceptions}
                 result_msg.id = message_id
 
                 mq.send(message=result_msg, key='task-results')

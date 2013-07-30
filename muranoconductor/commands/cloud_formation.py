@@ -201,7 +201,8 @@ class HeatExecutor(CommandBase):
                     eventlet.sleep(1)
                     continue
                 if status not in states:
-                    raise EnvironmentError()
+                    raise EnvironmentError(
+                        "Unexpected state {0}".format(status))
 
                 try:
                     return dict([(t['output_key'], t['output_value'])
