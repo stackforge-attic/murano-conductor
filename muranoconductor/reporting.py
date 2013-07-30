@@ -24,11 +24,17 @@ class Reporter(object):
         self._environment_id = environment_id
         rmqclient.declare('task-reports')
 
-    def _report_func(self, id, entity, text, **kwargs):
+    def report_generic(self, text, details=None, level='info'):
+        return self._report_func(None, None, text, details, level)
+
+    def _report_func(self, id, entity, text, details=None, level='info',
+                     **kwargs):
         body = {
             'id': id,
             'entity': entity,
             'text': text,
+            'details': details,
+            'level': level,
             'environment_id': self._environment_id
         }
 
@@ -44,5 +50,10 @@ class Reporter(object):
 def _report_func(context, id, entity, text, **kwargs):
     reporter = context['/reporter']
     return reporter._report_func(id, entity, text, **kwargs)
+
+
+class ReportedException(Exception):
+    pass
+
 
 xml_code_engine.XmlCodeEngine.register_function(_report_func, "report")

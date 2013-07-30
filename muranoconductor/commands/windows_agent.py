@@ -10,11 +10,12 @@ log = logging.getLogger(__name__)
 
 
 class WindowsAgentExecutor(CommandBase):
-    def __init__(self, stack, rmqclient):
+    def __init__(self, stack, rmqclient, reporter):
         self._stack = stack
         self._rmqclient = rmqclient
         self._pending_list = []
         self._results_queue = '-execution-results-%s' % str(stack).lower()
+        self._reporter = reporter
         rmqclient.declare(self._results_queue)
 
     def execute(self, template, mappings, unit, service, callback):

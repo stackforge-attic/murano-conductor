@@ -15,6 +15,7 @@
 
 import glob
 import sys
+import traceback
 
 import anyjson
 import eventlet
@@ -76,6 +77,7 @@ class ConductorWorkflowService(service.Service):
     def _task_received(self, message):
         task = message.body or {}
         message_id = message.id
+        reporter = None
         with self.create_rmq_client() as mq:
             try:
                 log.info('Starting processing task {0}: {1}'.format(
@@ -83,8 +85,10 @@ class ConductorWorkflowService(service.Service):
                 reporter = reporting.Reporter(mq, message_id, task['id'])
                 config = Config()
 
-                command_dispatcher = CommandDispatcher(
-                    'e' + task['id'], mq, task['token'], task['tenant_id'])
+                command_dispatcher = CommandDispatcher('e' + task['id'], mq,
+                                                       task['token'],
+                                                       task['tenant_id'],
+                                                       reporter)
                 workflows = []
                 for path in glob.glob("data/workflows/*.xml"):
                     log.debug('Loading XML {0}'.format(path))
@@ -106,10 +110,14 @@ class ConductorWorkflowService(service.Service):
                     except Exception as ex:
                         log.exception(ex)
                         break
-
                 command_dispatcher.close()
+            except reporting.ReportedException as e:
+                log.exception("Exception has occurred and was reported to API")
             except Exception as e:
-                log.exception(e)
+                log.exception("Unexpected exception has occurred")
+                if reporter:
+                    reporter.report_generic("Unexpected error has occurred",
+                                            e.message, 'error')
             finally:
                 if 'token' in task:
                     del task['token']

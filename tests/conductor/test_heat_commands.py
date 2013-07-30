@@ -52,7 +52,8 @@ class TestHeatExecutor(unittest.TestCase):
     @mock.patch('muranoconductor.config.CONF')
     def test_create_stack(self, config_mock, ksclient_mock, heat_mock):
         self._init(config_mock, ksclient_mock)
-        executor = HeatExecutor('stack', 'token', 'tenant_id')
+        reporter = mock.MagicMock()
+        executor = HeatExecutor('stack', 'token', 'tenant_id', reporter)
         callback = mock.MagicMock()
 
         executor.execute(
@@ -91,7 +92,8 @@ class TestHeatExecutor(unittest.TestCase):
     @mock.patch('muranoconductor.config.CONF')
     def test_update_stack(self, config_mock, ksclient_mock, heat_mock):
         self._init(config_mock, ksclient_mock)
-        executor = HeatExecutor('stack', 'token', 'tenant_id')
+        reporter = mock.MagicMock()
+        executor = HeatExecutor('stack', 'token', 'tenant_id', reporter)
         callback = mock.MagicMock()
 
         executor.execute(
@@ -146,7 +148,8 @@ class TestHeatExecutor(unittest.TestCase):
     @mock.patch('muranoconductor.config.CONF')
     def test_delete_stack(self, config_mock, ksclient_mock, heat_mock):
         self._init(config_mock, ksclient_mock)
-        executor = HeatExecutor('stack', 'token', 'tenant_id')
+        reporter = mock.MagicMock()
+        executor = HeatExecutor('stack', 'token', 'tenant_id', reporter)
         callback = mock.MagicMock()
 
         executor.execute(

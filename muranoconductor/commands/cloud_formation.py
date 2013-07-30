@@ -12,9 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 
 import anyjson
 import eventlet
+from muranoconductor.reporting import ReportedException
 import types
 import jsonpath
 
@@ -30,10 +32,11 @@ log = logging.getLogger(__name__)
 
 
 class HeatExecutor(CommandBase):
-    def __init__(self, stack, token, tenant_id):
+    def __init__(self, stack, token, tenant_id, reporter):
         self._update_pending_list = []
         self._delete_pending_list = []
         self._stack = stack
+        self._reporter = reporter
         settings = muranoconductor.config.CONF.heat
 
         client = ksclient.Client(endpoint=settings.auth_url)
@@ -86,12 +89,18 @@ class HeatExecutor(CommandBase):
         })
 
     def has_pending_commands(self):
-        return len(self._update_pending_list) + \
-            len(self._delete_pending_list) > 0
+        return len(self._update_pending_list) + len(
+            self._delete_pending_list) > 0
 
     def execute_pending(self):
-        r1 = self._execute_pending_updates()
-        r2 = self._execute_pending_deletes()
+        try:
+            r1 = self._execute_pending_updates()
+            r2 = self._execute_pending_deletes()
+        except Exception as e:
+            self._reporter.report_generic("Unable to execute Heat command",
+                                          e.message, "error")
+            trace = sys.exc_info()[2]
+            raise ReportedException(e.message), None, trace
         return r1 or r2
 
     def _execute_pending_updates(self):
@@ -201,7 +210,8 @@ class HeatExecutor(CommandBase):
                     eventlet.sleep(1)
                     continue
                 if status not in states:
-                    raise EnvironmentError()
+                    raise EnvironmentError(
+                        "Unexpected state {0}".format(status))
 
                 try:
                     return dict([(t['output_key'], t['output_value'])
