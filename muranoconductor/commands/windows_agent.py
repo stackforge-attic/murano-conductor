@@ -49,6 +49,7 @@ class WindowsAgentExecutor(CommandBase):
         with self._rmqclient.open(self._results_queue) as subscription:
             while self.has_pending_commands():
                 msg = subscription.get_message()
+                msg.ack()
                 msg_id = msg.id.lower()
                 item, index = muranoconductor.helpers.find(
                     lambda t: t['id'] == msg_id, self._pending_list)
