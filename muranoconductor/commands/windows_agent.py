@@ -49,6 +49,8 @@ class WindowsAgentExecutor(CommandBase):
 
         with self._rmqclient.open(self._results_queue) as subscription:
             while self.has_pending_commands():
+                log.debug("Waiting for responses to be returned by the agent. "
+                          "%i total responses remain", len(self._pending_list))
                 msg = subscription.get_message()
                 msg.ack()
                 msg_id = msg.id.lower()

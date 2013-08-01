@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 import jsonpath
 import re
@@ -19,6 +20,8 @@ import types
 
 import function_context
 import xml_code_engine
+
+log = logging.getLogger(__name__)
 
 
 class Workflow(object):
@@ -123,13 +126,17 @@ class Workflow(object):
         if path.startswith('##'):
             raise RuntimeError('Cannot modify config from XML-code')
         elif path.startswith('#'):
-            context[':' + path[1:]] = body_data
+            context_path = ':' + path[1:]
+            log.debug(
+                "Setting context variable '{0}' to '{1}'".format(context_path,
+                                                                 body_data))
+            context[context_path] = body_data
             return
-
         if target:
             data = context[target]
             position = path.split('.')
             if Workflow._get_path(data, position) != body_data:
+                log.debug("Setting '{0}' to '{1}'".format(path, body_data))
                 Workflow._set_path(data, position, body_data)
                 context['/hasSideEffects'] = True
 
@@ -137,14 +144,18 @@ class Workflow(object):
             data = context['/dataSource']
             new_position = Workflow._correct_position(path, context)
             if Workflow._get_path(data, new_position) != body_data:
+                log.debug("Setting '{0}' to '{1}'".format(path, body_data))
                 Workflow._set_path(data, new_position, body_data)
                 context['/hasSideEffects'] = True
 
     @staticmethod
-    def _rule_func(match, context, body, engine, limit=0, name=None, **kwargs):
+    def _rule_func(match, context, body, engine, limit=0, name=None, desc=None,
+                   **kwargs):
         position = context['__dataSource_currentPosition'] or []
 
         position, match = Workflow._get_relative_position(match, context)
+        if not desc:
+            desc = match
         data = Workflow._get_path(context['/dataSource'], position)
         match = re.sub(r'@\.([\w.]+)',
                        r"Workflow._get_path(@, '\1'.split('.'))", match)
@@ -157,8 +168,9 @@ class Workflow(object):
             index += 1
             new_position = position + found_match[1:]
             context['__dataSource_currentPosition'] = new_position
-            context['__dataSource_currentObj'] = Workflow._get_path(
-                context['/dataSource'], new_position)
+            cur_obj = Workflow._get_path(context['/dataSource'], new_position)
+            context['__dataSource_currentObj'] = cur_obj
+            log.debug("Rule '{0}' matches on '{1}'".format(desc, cur_obj))
             for element in body:
                 if element.tag == 'empty':
                     continue
@@ -168,7 +180,7 @@ class Workflow(object):
         if not index:
             empty_handler = body.find('empty')
             if empty_handler is not None:
-
+                log.debug("Running empty handler for rule '{0}'".format(desc))
                 engine.evaluate_content(empty_handler, context)
 
     @staticmethod

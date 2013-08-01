@@ -12,9 +12,11 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from openstack.common import log as logging
 import xml_code_engine
 from muranocommon.messaging import Message
+
+log = logging.getLogger(__name__)
 
 
 class Reporter(object):
@@ -45,6 +47,7 @@ class Reporter(object):
         self._rmqclient.send(
             message=msg,
             key='task-reports')
+        log.debug("Reported '%s' to API", body)
 
 
 def _report_func(context, id, entity, text, **kwargs):

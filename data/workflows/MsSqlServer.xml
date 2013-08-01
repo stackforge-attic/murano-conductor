@@ -1,11 +1,13 @@
 <workflow>
-	<rule match="$.services[?(@.type == 'msSqlServer' and @.domain)].units[*]">
+	<rule match="$.services[?(@.type == 'msSqlServer' and @.domain)].units[*]"
+            desc="Units of SQL Server services which are part of the domain">
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]">
+	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]"
+            desc="Units of SQLServer services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -41,7 +43,8 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]">
+	<rule match="$.services[?(@.type == 'msSqlServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]"
+            desc="Units of SQLServer services which have got an instance deployed but has not got a correct admin password">
 		<send-command template="SetPassword">
 			<parameter name="unit">
 				<select path="id"/>
@@ -65,7 +68,8 @@
 	</rule>
 
 
-	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.instanceName and not @.state.msSqlServerInstalled)]">
+	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.instanceName and not @.state.msSqlServerInstalled)]"
+            desc="Units of SqlServer services which have got an instance deployed but have not got an SQL Server installed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating MS SQL Server on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
