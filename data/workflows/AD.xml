@@ -135,6 +135,32 @@
 		</send-command>
 	</rule>
 
+    <rule match="$.services[?(@.type != 'activeDirectory')].units[?(@.state.domain and not @.domain)]">
+        <send-command template="LeaveDomain">
+            <parameter name="unit">
+                <select path="id" source="unit"/>
+            </parameter>
+            <parameter name="service">
+                <select path="::id"/>
+            </parameter>
+            <parameter name="mappings">
+                <map>
+                    <mapping name="domain">
+                        <select path="state.domain"/>
+                    </mapping>
+                </map>
+            </parameter>
+
+            <success>
+                <report entity="unit">
+                    <parameter name="id"><select path="id" source="unit"/></parameter>
+                    <parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) has leaved domain <select path="state.domain"/></parameter>
+                </report>
+                <set path="state.domain"><null/></set>
+            </success>
+        </send-command>
+    </rule>
+
 	<rule match="$..units[?(@.state.instanceName and @.domain and @.domain != @.state.domain)]">
 		<set path="#unit">
 			<select/>
