@@ -1,5 +1,5 @@
 <workflow>
-	<rule match="$.services[*].units[?(not @.state.osImageName)]">
+	<rule match="$.services[*].units[?(not @.state.osImageName)]" desc="Units with no image">
         <set path="#osImageMap">
             <map>
 

@@ -104,8 +104,13 @@ class ConductorWorkflowService(service.Service):
                                 if workflow.execute():
                                     result = True
                             if not result:
+                                log.debug(
+                                    "No rules matched, "
+                                    "will now execute pending commands")
                                 break
                         if not command_dispatcher.execute_pending():
+                            log.debug("No pending commands found, "
+                                      "seems like we are done")
                             break
                     except Exception as ex:
                         log.exception(ex)

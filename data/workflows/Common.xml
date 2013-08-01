@@ -1,6 +1,6 @@
 <workflow>
 
-	<rule match="$.services[*].units[?(@.state.hostname is None)]">
+	<rule match="$.services[*].units[?(@.state.hostname is None)]" desc="Units with no hostname">
 		<set path="state.hostname">
 			<generate-hostname>
 				<parameter name="pattern"><select path="::unitNamingPattern"/></parameter>
@@ -9,8 +9,8 @@
 		</set>
 	</rule>
 
-	<rule match="$[?(not @.state.deleted)]">
-		<rule match="$.services[*].units[*]">
+	<rule match="$[?(not @.state.deleted)]" desc="Search through all the environments..">
+		<rule match="$.services[*].units[*]" desc="If any units exists">
 			<empty>
 				<delete-cf-stack>
 					<success>

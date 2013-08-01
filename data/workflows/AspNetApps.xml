@@ -1,11 +1,13 @@
 <workflow>
-	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm') and @.domain)].units[*]">
+	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm') and @.domain)].units[*]"
+          desc='Units of web services with domain'>
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]">
+	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]"
+          desc="Units of web services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -41,7 +43,8 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.state.registeredWithLB)]">
+	<rule match="$.services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.state.registeredWithLB)]"
+          desc="Units of web-farms services which have a hostname assigned but are not registered with LB">
 		<update-cf-stack template="LoadBalancer" result="outputs">
 			<parameter name="mappings">
 				<map>
@@ -57,7 +60,8 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm') and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]">
+	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm') and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]"
+            desc="Units of web services which have got an instance deployed but has not got a correct admin password ">
 		<send-command template="SetPassword">
 			<parameter name="unit">
 				<select path="id"/>
@@ -81,7 +85,8 @@
 	</rule>
 
 
-	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm'))].units[?(@.state.instanceName and not @.state.iisInstalled)]">
+	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm'))].units[?(@.state.instanceName and not @.state.iisInstalled)]"
+            desc="Units of web services which have got an instance deployed but have not got an IIS installed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating IIS Web Server on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -103,7 +108,8 @@
 		</send-command>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('aspNetApp', 'aspNetAppFarm'))].units[?(@.state.iisInstalled and not @.state.webAppDeployed)]">
+	<rule match="$.services[?(@.type in ('aspNetApp', 'aspNetAppFarm'))].units[?(@.state.iisInstalled and not @.state.webAppDeployed)]"
+            desc="Units of ASP.NET app services which have got IIS installed but not the WebApplication deployed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Deploying WebApp <select path="::name"/> on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
