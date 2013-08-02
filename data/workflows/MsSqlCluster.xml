@@ -1,0 +1,292 @@
+<workflow>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.domain)].units[*]"
+            desc="Units of SQL Server Cluster services which are part of the domain">
+		<set path="domain">
+			<select path="::domain"/>
+		</set>
+	</rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]"
+            desc="Units of SQL Server Cluster services having hostname and image names assigned but without instances">
+		<report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
+		</report>
+		<update-cf-stack template="Windows">
+			<parameter name="mappings">
+				<map>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+					<mapping name="userData">
+						<prepare-user-data>
+							<parameter name="hostname"><select path="state.hostname"/></parameter>
+							<parameter name="unit"><select path="id"/></parameter>
+							<parameter name="service"><select path="::id"/></parameter>
+						</prepare-user-data>
+					</mapping>
+				</map>
+			</parameter>
+			<parameter name="arguments">
+				<map>
+					<argument name="InstanceType"><select path="::flavor" default="m1.medium"/></argument>
+					<argument name="ImageName"><select path="state.osImageName"/></argument>
+					<argument name="AvailabilityZone"><select path="::availabilityZone" default="nova"/></argument>
+				</map>
+			</parameter>
+
+			<success>
+				<set path="state.instanceName"><select path="name"/></set>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
+				</report>
+			</success>
+		</update-cf-stack>
+	</rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.domain and not @.domainAdminUserName and not @.domainAdminPassword)]"
+            desc="SQL Server Cluster service instance with domain configured but without admin account name/password">
+		<set path="#service">
+			<select/>
+		</set>
+		<rule desc="Domain controller exists with the assigned DNS IP">
+			<parameter name="match">/$.services[?(@.type == 'activeDirectory' and @.domain == '<select path="domain"/>')]</parameter>
+            <set path="domainAdminUserName" target="service"><select path="adminAccountName" default="Administrator"/></set>
+            <set path="domainAdminPassword" target="service"><select path="adminPassword"/></set>
+		</rule>
+	</rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]"
+            desc="Units of SQL Server Cluster services which have got an instance deployed but has not got a correct admin password">
+		<send-command template="SetPassword">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+			<parameter name="mappings">
+				<map>
+					<mapping name="adminPassword">
+						<select path="::adminPassword"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="::state.adminPassword">
+					<select path="::adminPassword"/>
+				</set>
+			</success>
+		</send-command>
+	</rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.domain and not @.state.failoverClusterPrerequisitesInstalled)]"
+            desc="Units of SQL Server Cluster services that are already joined AD domain">
+		<send-command template="SqlServerCluster/FailoverClusterPrerequisites">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+			<success>
+				<set path="state.failoverClusterPrerequisitesInstalled"><true/></set>
+                <report entity="unit">
+                    <parameter name="id"><select path="id"/></parameter>
+                    <parameter name="text">Failover cluster prerequisites installed on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and not @.state.failoverClusterCreated)].units[?(@.state.failoverClusterPrerequisitesInstalled)]" limit="1"
+            desc="First unit of SQL Server Cluster services that is already has failover cluster prerequisites installed">
+		<send-command template="SqlServerCluster/FailoverCluster">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="clusterName">
+						<select path="::clusterName"/>
+					</mapping>
+					<mapping name="clusterNodes">
+						<select-all path=":$[*].state.hostname"/>
+					</mapping>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
+					</mapping>
+					<mapping name="clusterIP">
+						<select path="::clusterIP"/>
+					</mapping>
+					<mapping name="sqlServiceAccountName">
+						<select path="::sqlServiceUserName"/>
+					</mapping>
+					<mapping name="sqlServiceAccountPassword">
+						<select path="::sqlServicePassword"/>
+					</mapping>
+					<mapping name="domainName">
+						<select path="state.domain"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="::state.failoverClusterCreated"><true/></set>
+                <report entity="service">
+                    <parameter name="id"><select path="::id"/></parameter>
+                    <parameter name="text">Failover cluster created for SQL Server Cluster service (<select path="::name"/>)</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.failoverClusterCreated and not @.state.agEnvironmentConfigured)].units[*]" limit="1"
+            desc="First unit of SQL Server Cluster services that is already has failover cluster created">
+		<send-command template="SqlServerCluster/ConfigureEnvironmentForAOAG">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
+					</mapping>
+					<mapping name="sqlServiceAccountName">
+						<select path="::sqlServiceUserName"/>
+					</mapping>
+					<mapping name="sqlServiceAccountPassword">
+						<select path="::sqlServicePassword"/>
+					</mapping>
+					<mapping name="domainName">
+						<select path="state.domain"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="::state.agEnvironmentConfigured"><true/></set>
+                <report entity="service">
+                    <parameter name="id"><select path="::id"/></parameter>
+                    <parameter name="text">Environment for AlwaysOn Availability Group of SQL Server Cluster service (<select path="::name"/>) configured</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.agEnvironmentConfigured)].units[?(@.state.failoverClusterPrerequisitesInstalled and not @.state.sqlServerInstalled)]"
+            desc="All units of SQL Server Cluster services that is already has environment configured">
+		<send-command template="SqlServerCluster/InstallSqlServerForAOAG">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="sqlServiceAccountName">
+						<select path="::sqlServiceUserName"/>
+					</mapping>
+					<mapping name="sqlServiceAccountPassword">
+						<select path="::sqlServicePassword"/>
+					</mapping>
+					<mapping name="domainName">
+						<select path="state.domain"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="state.sqlServerInstalled"><true/></set>
+                <report entity="unit">
+                    <parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">SQL Server installed on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.sqlServerInstalled and not @.state.primaryReplicaInitialized)]"
+            desc="All units of SQL Server Cluster services that has SQL Server installed">
+		<send-command template="SqlServerCluster/InitializeAOAGPrimaryReplica">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="groupName">
+						<select path="::agGroupName"/>
+					</mapping>
+					<mapping name="nodeList">
+						<select-all path=":$[*].state.hostname"/>
+					</mapping>
+					<mapping name="primaryNode">
+						<select-single path=":$[?(@.isMaster)].state.hostname"/>
+					</mapping>
+					<mapping name="syncModeNodeList">
+						<select-all path=":$[?(@.isSync)].state.hostname"/>
+					</mapping>
+					<mapping name="listenerIP">
+						<select path="::agListenerIP"/>
+					</mapping>
+					<mapping name="listenerName">
+						<select path="::agListenerName"/>
+					</mapping>
+					<mapping name="databaseList">
+						<select path="::databases"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="state.primaryReplicaInitialized"><true/></set>
+                <report entity="unit">
+                    <parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Primary replica for SQL Server AG initialized for <select path="state.hostname"/> (<select path="name"/>)</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.primaryReplicaInitialized and not @.state.secondaryReplicaInitialized)]"
+            desc="All units of SQL Server Cluster services that has primary replica initialized">
+		<send-command template="SqlServerCluster/InitializeAOAGSecondaryReplica">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="nodeList">
+						<select-all path=":$[*].state.hostname"/>
+					</mapping>
+					<mapping name="primaryNode">
+						<select-single path=":$[?(@.isMaster)].state.hostname"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="state.secondaryReplicaInitialized"><true/></set>
+                <report entity="unit">
+                    <parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Secondary replica for SQL Server AG initialized for <select path="state.hostname"/> (<select path="name"/>)</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+</workflow>
