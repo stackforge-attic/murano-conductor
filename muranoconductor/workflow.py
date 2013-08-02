@@ -151,8 +151,6 @@ class Workflow(object):
     @staticmethod
     def _rule_func(match, context, body, engine, limit=0, name=None, desc=None,
                    **kwargs):
-        position = context['__dataSource_currentPosition'] or []
-
         position, match = Workflow._get_relative_position(match, context)
         if not desc:
             desc = match
@@ -184,6 +182,19 @@ class Workflow(object):
                 engine.evaluate_content(empty_handler, context)
 
     @staticmethod
+    def _select_all_func(context, path='', source=None, limit=0, **kwargs):
+        if not source:
+            position, path = Workflow._get_relative_position(path, context)
+            source = Workflow._get_path(context['/dataSource'], position)
+        result = jsonpath.jsonpath(source, path) or []
+        return result if not limit else result[:limit]
+
+    @staticmethod
+    def _select_single_func(context, path='', source=None, **kwargs):
+        result = Workflow._select_all_func(context, path, source, **kwargs)
+        return result[0] if len(result) >= 1 else None
+
+    @staticmethod
     def _workflow_func(context, body, engine, **kwargs):
         context['/hasSideEffects'] = False
         for element in body:
@@ -204,3 +215,9 @@ xml_code_engine.XmlCodeEngine.register_function(
 
 xml_code_engine.XmlCodeEngine.register_function(
     Workflow._select_func, 'select')
+
+xml_code_engine.XmlCodeEngine.register_function(
+    Workflow._select_all_func, 'select-all')
+
+xml_code_engine.XmlCodeEngine.register_function(
+    Workflow._select_single_func, 'select-single')

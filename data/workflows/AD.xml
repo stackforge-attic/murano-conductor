@@ -161,7 +161,7 @@
             <success>
                 <report entity="unit">
                     <parameter name="id"><select path="id" source="unit"/></parameter>
-                    <parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) has leaved domain <select path="state.domain"/></parameter>
+                    <parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) has left domain <select path="state.domain"/></parameter>
                 </report>
                 <set path="state.domain"><null/></set>
             </success>
@@ -176,9 +176,8 @@
 		<set path="#service">
 			<select path="::"/>
 		</set>
-		<rule>
+		<rule desc="Domain controller exists with the assigned DNS IP">
 			<parameter name="match">/$.services[?(@.type == 'activeDirectory' and @.domain == '<select path="domain"/>' and @.state.primaryDcIp)]</parameter>
-            <parameter name="desc">Domain controller exists with the assigned DNS IP</parameter>
 			<send-command template="JoinDomain">
 				<parameter name="unit">
 					<select path="id" source="unit"/>
@@ -197,7 +196,9 @@
 						<mapping name="dnsIp">
 							<select path="state.primaryDcIp"/>
 						</mapping>
-						<mapping name="domainUser">Administrator</mapping>
+						<mapping name="domainUser">
+							<select path="adminAccountName" default="Administrator"/>
+                        </mapping>
 						<mapping name="ouPath"></mapping>
 					</map>
 				</parameter>
