@@ -13,7 +13,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<update-cf-stack template="Windows">
+		<update-cf-stack template="Windows" error="exception">
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
@@ -41,6 +41,13 @@
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
 				</report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</update-cf-stack>
 	</rule>
 
@@ -58,7 +65,7 @@
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.temp.instanceName)]"
             desc="Units of SQL Server Cluster services which have got an instance deployed but has not got a correct admin password">
-		<send-command template="SetPassword">
+		<send-command template="SetPassword" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -77,12 +84,19 @@
 					<select path="::adminPassword"/>
 				</set>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.domain and not @.state.failoverClusterPrerequisitesInstalled)]"
             desc="Units of SQL Server Cluster services that are already joined AD domain">
-		<send-command template="SqlServerCluster/FailoverClusterPrerequisites">
+		<send-command template="SqlServerCluster/FailoverClusterPrerequisites" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -109,12 +123,19 @@
                     <parameter name="text">Failover cluster prerequisites installed on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
                 </report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to install prerequisites on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer' and not @.state.failoverClusterCreated)].units[?(@.state.failoverClusterPrerequisitesInstalled)]" limit="1"
             desc="First unit of SQL Server Cluster services that is already has failover cluster prerequisites installed">
-		<send-command template="SqlServerCluster/FailoverCluster">
+		<send-command template="SqlServerCluster/FailoverCluster" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -147,12 +168,19 @@
                     <parameter name="text">Failover cluster created for SQL Server Cluster service (<select path="::name"/>)</parameter>
                 </report>
 			</success>
+            <failure>
+                <report entity="Service" level="error">
+					<parameter name="id"><select path="::id"/></parameter>
+					<parameter name="text">Unable to create failover cluster for SQL Server Service <select path="::name"/> due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.failoverClusterCreated and not @.state.agEnvironmentConfigured)].units[*]" limit="1"
             desc="First unit of SQL Server Cluster services that is already has failover cluster created">
-		<send-command template="SqlServerCluster/ConfigureEnvironmentForAOAG">
+		<send-command template="SqlServerCluster/ConfigureEnvironmentForAOAG" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -188,12 +216,19 @@
                     <parameter name="text">Environment for AlwaysOn Availability Group of SQL Server Cluster service (<select path="::name"/>) configured</parameter>
                 </report>
 			</success>
+            <failure>
+                <report entity="service" level="error">
+					<parameter name="id"><select path="::id"/></parameter>
+					<parameter name="text">Unable to configure the environment for AlwaysOn Availability Group of SQL Server Cluster service (<select path="::name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.agEnvironmentConfigured)].units[?(@.state.failoverClusterPrerequisitesInstalled and not @.state.sqlServerInstalled)]"
             desc="All units of SQL Server Cluster services that is already has environment configured">
-		<send-command template="SqlServerCluster/InstallSqlServerForAOAG">
+		<send-command template="SqlServerCluster/InstallSqlServerForAOAG" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -220,12 +255,19 @@
 					<parameter name="text">SQL Server installed on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
                 </report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to install SQL Server on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.sqlServerInstalled and not @.state.alwaysOnInitialized)]"
             desc="All units of SQL Server Cluster services that has SQL Server installed">
-		<send-command template="SqlServerCluster/InitializeAlwaysOn">
+		<send-command template="SqlServerCluster/InitializeAlwaysOn" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -258,12 +300,19 @@
 					<parameter name="text">AlwaysOn AG initialized for <select path="state.hostname"/> (<select path="name"/>)</parameter>
                 </report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to initialize AlwaysOn AG for <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.alwaysOnInitialized and not @.state.primaryReplicaInitialized)]"
             desc="All units of SQL Server Cluster services that has AlwaysOn initialized">
-		<send-command template="SqlServerCluster/InitializeAOAGPrimaryReplica">
+		<send-command template="SqlServerCluster/InitializeAOAGPrimaryReplica" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -311,12 +360,19 @@
 					<parameter name="text">Primary replica for SQL Server AG initialized for <select path="state.hostname"/> (<select path="name"/>)</parameter>
                 </report>
 			</success>
+             <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to initialize primary replica for SQL Server AG for <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.primaryReplicaInitialized and not @.state.secondaryReplicaInitialized)]"
             desc="All units of SQL Server Cluster services that has primary replica initialized">
-		<send-command template="SqlServerCluster/InitializeAOAGSecondaryReplica">
+		<send-command template="SqlServerCluster/InitializeAOAGSecondaryReplica" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -349,6 +405,13 @@
 					<parameter name="text">Secondary replica for SQL Server AG initialized for <select path="state.hostname"/> (<select path="name"/>)</parameter>
                 </report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to initialize secondary replica for SQL Server AG for <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
     </rule>
 
