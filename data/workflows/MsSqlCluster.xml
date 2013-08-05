@@ -7,7 +7,7 @@
 		</set>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]"
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.hostname and @.state.osImageName and not @.temp.instanceName)]"
             desc="Units of SQL Server Cluster services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
@@ -35,7 +35,7 @@
 			</parameter>
 
 			<success>
-				<set path="state.instanceName"><select path="name"/></set>
+				<set path="temp.instanceName"><select path="name"/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
@@ -56,7 +56,7 @@
 		</rule>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]"
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.temp.instanceName)]"
             desc="Units of SQL Server Cluster services which have got an instance deployed but has not got a correct admin password">
 		<send-command template="SetPassword">
 			<parameter name="unit">

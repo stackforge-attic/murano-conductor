@@ -124,8 +124,7 @@ class ConductorWorkflowService(service.Service):
                     reporter.report_generic("Unexpected error has occurred",
                                             e.message, 'error')
             finally:
-                if 'token' in task:
-                    del task['token']
+                self.cleanup(task, reporter)
                 result_msg = Message()
                 result_msg.body = task
                 result_msg.id = message_id
@@ -134,3 +133,26 @@ class ConductorWorkflowService(service.Service):
                 message.ack()
         log.info('Finished processing task {0}. Result = {1}'.format(
             message_id, anyjson.dumps(task)))
+
+    def cleanup(self, model, reporter):
+        try:
+            if 'token' in model:
+                del model['token']
+
+            if 'temp' in model:
+                del model['temp']
+
+            services = model.get('services', [])
+            for service in services:
+                if 'temp' in service:
+                    del service['temp']
+
+                units = service.get('units', [])
+                for unit in units:
+                    if 'temp' in unit:
+                        del unit['temp']
+        except Exception as e:
+            log.exception("Unexpected exception has occurred")
+            if reporter:
+                reporter.report_generic("Unexpected error has occurred",
+                                        e.message, 'error')

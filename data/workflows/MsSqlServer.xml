@@ -6,7 +6,7 @@
 		</set>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.hostname and @.state.osImageName and not @.state.instanceName)]"
+	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.hostname and @.state.osImageName and not @.temp.instanceName)]"
             desc="Units of SQL Server services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
@@ -34,7 +34,7 @@
 			</parameter>
 
 			<success>
-				<set path="state.instanceName"><select path="name"/></set>
+				<set path="instanceName.instanceName"><select path="name"/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
@@ -43,7 +43,7 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.state.instanceName)]"
+	<rule match="$.services[?(@.type == 'msSqlServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.temp.instanceName)]"
             desc="Units of SQL Server services which have got an instance deployed but has not got a correct admin password">
 		<send-command template="SetPassword">
 			<parameter name="unit">
@@ -68,7 +68,7 @@
 	</rule>
 
 
-	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.state.instanceName and not @.state.msSqlServerInstalled)]"
+	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.temp.instanceName and not @.state.msSqlServerInstalled)]"
             desc="Units of SQL Server services which have got an instance deployed but have not got an SQL Server installed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
