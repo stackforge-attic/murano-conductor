@@ -125,15 +125,6 @@
 					<mapping name="clusterIP">
 						<select path="::clusterIP"/>
 					</mapping>
-					<mapping name="sqlServiceAccountName">
-						<select path="::sqlServiceUserName"/>
-					</mapping>
-					<mapping name="sqlServiceAccountPassword">
-						<select path="::sqlServicePassword"/>
-					</mapping>
-					<mapping name="domainName">
-						<select path="state.domain"/>
-					</mapping>
 				</map>
 			</parameter>
 			<success>
@@ -171,6 +162,9 @@
 					</mapping>
 					<mapping name="domainName">
 						<select path="state.domain"/>
+					</mapping>
+					<mapping name="primaryNode">
+						<select-single path=":$[?(@.isMaster)].state.hostname"/>
 					</mapping>
 				</map>
 			</parameter>
@@ -216,8 +210,46 @@
 		</send-command>
     </rule>
 
-	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.sqlServerInstalled and not @.state.primaryReplicaInitialized)]"
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.sqlServerInstalled and not @.state.alwaysOnInitialized)]"
             desc="All units of SQL Server Cluster services that has SQL Server installed">
+		<send-command template="SqlServerCluster/InitializeAlwaysOn">
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
+					</mapping>
+					<mapping name="nodeList">
+						<select-all path=":$[*].state.hostname"/>
+					</mapping>
+					<mapping name="primaryNode">
+						<select-single path=":$[?(@.isMaster)].state.hostname"/>
+					</mapping>
+	    			<mapping name="domainName">
+						<select path="state.domain"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="state.alwaysOnInitialized"><true/></set>
+                <report entity="unit">
+                    <parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">AlwaysOn AG initialized for <select path="state.hostname"/> (<select path="name"/>)</parameter>
+                </report>
+			</success>
+		</send-command>
+    </rule>
+
+	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.alwaysOnInitialized and not @.state.primaryReplicaInitialized)]"
+            desc="All units of SQL Server Cluster services that has AlwaysOn initialized">
 		<send-command template="SqlServerCluster/InitializeAOAGPrimaryReplica">
 			<parameter name="unit">
 				<select path="id"/>
@@ -227,6 +259,12 @@
 			</parameter>
             <parameter name="mappings">
 				<map>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
+					</mapping>
 					<mapping name="groupName">
 						<select path="::agGroupName"/>
 					</mapping>
@@ -235,6 +273,9 @@
 					</mapping>
 					<mapping name="primaryNode">
 						<select-single path=":$[?(@.isMaster)].state.hostname"/>
+					</mapping>
+	    			<mapping name="domainName">
+						<select path="state.domain"/>
 					</mapping>
 					<mapping name="syncModeNodeList">
 						<select-all path=":$[?(@.isSync)].state.hostname"/>
@@ -271,11 +312,20 @@
 			</parameter>
             <parameter name="mappings">
 				<map>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
+					</mapping>
 					<mapping name="nodeList">
 						<select-all path=":$[*].state.hostname"/>
 					</mapping>
 					<mapping name="primaryNode">
 						<select-single path=":$[?(@.isMaster)].state.hostname"/>
+					</mapping>
+	    			<mapping name="domainName">
+						<select path="state.domain"/>
 					</mapping>
 				</map>
 			</parameter>
