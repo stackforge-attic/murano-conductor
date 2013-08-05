@@ -43,7 +43,7 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.state.registeredWithLB)]"
+	<rule match="$.services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.temp.registeredWithLB)]"
           desc="Units of web-farms services which have a hostname assigned but are not registered with LB">
 		<update-cf-stack template="LoadBalancer" result="outputs">
 			<parameter name="mappings">
@@ -54,7 +54,7 @@
 				</map>
 			</parameter>
 			<success>
-				<set path="state.registeredWithLB"><true/></set>
+				<set path="temp.registeredWithLB"><true/></set>
 				<set path="::uri">http://<select source="outputs" path="LoadBalancerIP"/>:<select path="::loadBalancerPort"/></set>
 			</success>
 		</update-cf-stack>
