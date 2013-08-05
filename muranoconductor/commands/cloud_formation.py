@@ -110,6 +110,10 @@ class HeatExecutor(CommandBase):
         template, arguments = self._get_current_template()
         stack_exists = (template != {})
 
+        # do not need to merge with current stack cause we rebuilding it from
+        # scratch on every deployment
+        template, arguments = ({}, {})
+
         for t in self._update_pending_list:
             template = muranoconductor.helpers.merge_dicts(
                 template, t['template'])

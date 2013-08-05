@@ -136,7 +136,6 @@ class TestHeatExecutor(unittest.TestCase):
                 'arg1': 'arg1Value',
                 'arg2': 'arg2Value'},
             template={
-                'instance': {},
                 "testName": {
                     "testKey": "testValue"
                 }
