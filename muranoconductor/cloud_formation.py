@@ -20,14 +20,34 @@ import string
 import time
 
 import xml_code_engine
+from openstack.common import log as logging
 
+log = logging.getLogger(__name__)
 
-def update_cf_stack(engine, context, body, template, result=None, **kwargs):
+def update_cf_stack(engine, context, body, template, result=None, error=None,
+                    **kwargs):
     command_dispatcher = context['/commandDispatcher']
 
-    def callback(result_value):
+    def callback(result_value, error_result=None):
         if result is not None:
             context[result] = result_value
+
+        if error_result is not None:
+            if error is not None:
+                context[error] = {
+                    'message': getattr(error_result, 'message', None),
+                    'strerror': getattr(error_result, 'strerror', None),
+                    'timestamp': time.time()
+                }
+            failure_handler = body.find('failure')
+            if failure_handler is not None:
+                log.warning("Handling exception in failure block")
+                engine.evaluate_content(failure_handler, context)
+                return
+            else:
+                log.error("No failure block found for exception")
+                raise error_result
+
         success_handler = body.find('success')
         if success_handler is not None:
             engine.evaluate_content(success_handler, context)
