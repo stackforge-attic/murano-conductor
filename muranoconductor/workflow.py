@@ -203,6 +203,13 @@ class Workflow(object):
                 return True
         return False
 
+    @staticmethod
+    def _stop_func(context, body, engine, **kwargs):
+        if not 'temp' in context['/dataSource']:
+            context['/dataSource']['temp'] = {}
+
+        context['/dataSource']['temp']['_stop_requested'] = True
+
 
 xml_code_engine.XmlCodeEngine.register_function(
     Workflow._rule_func, 'rule')
@@ -215,6 +222,9 @@ xml_code_engine.XmlCodeEngine.register_function(
 
 xml_code_engine.XmlCodeEngine.register_function(
     Workflow._select_func, 'select')
+
+xml_code_engine.XmlCodeEngine.register_function(
+    Workflow._stop_func, 'stop')
 
 xml_code_engine.XmlCodeEngine.register_function(
     Workflow._select_all_func, 'select-all')

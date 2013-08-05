@@ -93,64 +93,64 @@ class HeatExecutor(CommandBase):
             self._delete_pending_list) > 0
 
     def execute_pending(self):
-        try:
-            r1 = self._execute_pending_updates()
-            r2 = self._execute_pending_deletes()
-        except Exception as e:
-            self._reporter.report_generic("Unable to execute Heat command",
-                                          e.message, "error")
-            trace = sys.exc_info()[2]
-            raise ReportedException(e.message), None, trace
+        r1 = self._execute_pending_updates()
+        r2 = self._execute_pending_deletes()
         return r1 or r2
 
     def _execute_pending_updates(self):
         if not len(self._update_pending_list):
             return False
 
-        template, arguments = self._get_current_template()
-        stack_exists = (template != {})
+        try:
+            template, arguments = self._get_current_template()
+            stack_exists = (template != {})
+            # do not need to merge with current stack cause we rebuilding it
+            # from scratch on every deployment
+            template, arguments = ({}, {})
 
-        # do not need to merge with current stack cause we rebuilding it from
-        # scratch on every deployment
-        template, arguments = ({}, {})
+            for t in self._update_pending_list:
+                template = muranoconductor.helpers.merge_dicts(template,
+                                                               t['template'])
+                arguments = muranoconductor.helpers.merge_dicts(arguments,
+                                                                t['arguments'],
+                                                                max_levels=1)
+            log.info(
+                'Executing heat template {0} with arguments {1} on stack {2}'
+                .format(anyjson.dumps(template), arguments, self._stack))
 
-        for t in self._update_pending_list:
-            template = muranoconductor.helpers.merge_dicts(
-                template, t['template'])
-            arguments = muranoconductor.helpers.merge_dicts(
-                arguments, t['arguments'], max_levels=1)
+            if stack_exists:
+                self._heat_client.stacks.update(
+                    stack_id=self._stack,
+                    parameters=arguments,
+                    template=template)
+                log.debug(
+                    'Waiting for the stack {0} to be update'.format(
+                        self._stack))
+                outs = self._wait_state('UPDATE_COMPLETE')
+                log.info('Stack {0} updated'.format(self._stack))
+            else:
+                self._heat_client.stacks.create(
+                    stack_name=self._stack,
+                    parameters=arguments,
+                    template=template)
 
-        log.info(
-            'Executing heat template {0} with arguments {1} on stack {2}'
-            .format(anyjson.dumps(template), arguments, self._stack))
+                log.debug('Waiting for the stack {0} to be create'.format(
+                    self._stack))
+                outs = self._wait_state('CREATE_COMPLETE')
+                log.info('Stack {0} created'.format(self._stack))
 
-        if stack_exists:
-            self._heat_client.stacks.update(
-                stack_id=self._stack,
-                parameters=arguments,
-                template=template)
-            log.debug(
-                'Waiting for the stack {0} to be update'.format(self._stack))
-            outs = self._wait_state('UPDATE_COMPLETE')
-            log.info('Stack {0} updated'.format(self._stack))
-        else:
-            self._heat_client.stacks.create(
-                stack_name=self._stack,
-                parameters=arguments,
-                template=template)
+            pending_list = self._update_pending_list
+            self._update_pending_list = []
 
-            log.debug('Waiting for the stack {0} to be create'.format(
-                self._stack))
-            outs = self._wait_state('CREATE_COMPLETE')
-            log.info('Stack {0} created'.format(self._stack))
-
-        pending_list = self._update_pending_list
-        self._update_pending_list = []
-
-        for item in pending_list:
-            item['callback'](outs)
-
-        return True
+            for item in pending_list:
+                item['callback'](outs)
+            return True
+        except Exception as ex:
+            pending_list = self._update_pending_list
+            self._update_pending_list = []
+            for item in pending_list:
+                item['callback'](None, ex)
+            return True
 
     def _execute_pending_deletes(self):
         if not len(self._delete_pending_list):

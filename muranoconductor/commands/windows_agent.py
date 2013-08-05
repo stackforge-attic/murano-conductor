@@ -18,7 +18,8 @@ class WindowsAgentExecutor(CommandBase):
         self._reporter = reporter
         rmqclient.declare(self._results_queue)
 
-    def execute(self, template, mappings, unit, service, callback):
+    def execute(self, template, mappings, unit, service, callback,
+                timeout=None):
         with open('data/templates/agent/%s.template' % template) as t_file:
             template_data = t_file.read()
 
@@ -29,7 +30,8 @@ class WindowsAgentExecutor(CommandBase):
         queue = ('%s-%s-%s' % (self._stack, service, unit)).lower()
         self._pending_list.append({
             'id': msg_id,
-            'callback': callback
+            'callback': callback,
+            'timeout': timeout
         })
 
         msg = Message()
@@ -49,15 +51,53 @@ class WindowsAgentExecutor(CommandBase):
 
         with self._rmqclient.open(self._results_queue) as subscription:
             while self.has_pending_commands():
-                log.debug("Waiting for responses to be returned by the agent. "
-                          "%i total responses remain", len(self._pending_list))
-                msg = subscription.get_message()
-                msg.ack()
-                msg_id = msg.id.lower()
-                item, index = muranoconductor.helpers.find(
-                    lambda t: t['id'] == msg_id, self._pending_list)
-                if item:
-                    self._pending_list.pop(index)
-                    item['callback'](msg.body)
-
+                # TODO: Add extended initialization timeout
+                # By now, all the timeouts are defined by the command input
+                # however, the first reply which we wait for being returned
+                # from the unit may be delayed due to long unit initialization
+                # and startup. So, for the nonitialized units we need to extend
+                # the command's timeout with the initialization timeout
+                timeout = self.get_max_timeout()
+                if timeout:
+                    span_message = "for {0} seconds".format(timeout)
+                else:
+                    span_message = 'infinitely'
+                log.debug("Waiting %s for responses to be returned"
+                          " by the agent. %i total responses remain",
+                          span_message, len(self._pending_list))
+                msg = subscription.get_message(timeout=timeout)
+                if msg:
+                    msg.ack()
+                    msg_id = msg.id.lower()
+                    item, index = muranoconductor.helpers.find(
+                        lambda t: t['id'] == msg_id, self._pending_list)
+                    if item:
+                        self._pending_list.pop(index)
+                        item['callback'](msg.body)
+                else:
+                    while self.has_pending_commands():
+                        item = self._pending_list.pop()
+                        item['callback'](AgentTimeoutException(timeout))
         return True
+
+    def get_max_timeout(self):
+        res = 0
+        for item in self._pending_list:
+            if item['timeout'] is None:  # if at least 1 item has no timeout
+                return None              # then return None (i.e. infinite)
+            res = max(res, item['timeout'])
+        return res
+
+
+class AgentTimeoutException(Exception):
+    def __init__(self, timeout):
+        self.message = "Unable to receive any response from the agent" \
+                       " in {0} sec".format(timeout)
+        self.timeout = timeout
+
+
+class UnhandledAgentException(Exception):
+    def __init__(self, errors):
+        self.message = "An unhandled exception has " \
+                       "occurred in the Agent: {0}".format(errors)
+        self.errors = errors
