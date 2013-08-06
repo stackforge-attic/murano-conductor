@@ -207,6 +207,9 @@
 					<set path="state.domain" target="unit">
 						<select path="domain"/>
 					</set>
+					<set path="state.domainIp" target="unit">
+							<select path="state.primaryDcIp"/>
+					</set>
 					<report entity="unit">
 						<parameter name="id"><select path="id" source="unit"/></parameter>
 						<parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) has joined domain <select path="domain"/></parameter>

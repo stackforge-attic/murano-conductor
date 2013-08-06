@@ -74,6 +74,9 @@
 					<set path="state.domain">
 						<select path="domain" source="ad"/>
 					</set>
+					<set path="state.domainIp">
+						<select path="dnsIp" source="ad"/>
+					</set>
 					<report entity="unit">
 						<parameter name="id"><select path="id"/></parameter>
 						<parameter name="text">Unit <select path="state.hostname"/> (<select path="name"/>) has joined domain <select path="domain" source="ad"/></parameter>

@@ -141,6 +141,9 @@
 					<mapping name="clusterIP">
 						<select path="::clusterIP"/>
 					</mapping>
+					<mapping name="shareServer">
+						<select path="state.domainIp"/>
+					</mapping>
 				</map>
 			</parameter>
 			<success>
@@ -164,21 +167,6 @@
 			</parameter>
             <parameter name="mappings">
 				<map>
-					<mapping name="domainAdminAccountName">
-						<select path="::domainAdminUserName"/>
-					</mapping>
-					<mapping name="domainAdminAccountPassword">
-						<select path="::domainAdminPassword"/>
-					</mapping>
-					<mapping name="sqlServiceAccountName">
-						<select path="::sqlServiceUserName"/>
-					</mapping>
-					<mapping name="sqlServiceAccountPassword">
-						<select path="::sqlServicePassword"/>
-					</mapping>
-					<mapping name="domainName">
-						<select path="state.domain"/>
-					</mapping>
 					<mapping name="primaryNode">
 						<select-single path=":$[?(@.isMaster)].state.hostname"/>
 					</mapping>
@@ -210,6 +198,12 @@
 					</mapping>
 					<mapping name="sqlServiceAccountPassword">
 						<select path="::sqlServicePassword"/>
+					</mapping>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
 					</mapping>
 					<mapping name="domainName">
 						<select path="state.domain"/>
