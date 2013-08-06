@@ -129,6 +129,9 @@
 					<mapping name="clusterNodes">
 						<select-all path=":$[*].state.hostname"/>
 					</mapping>
+					<mapping name="domainName">
+						<select path="state.domain"/>
+					</mapping>
 					<mapping name="domainAdminAccountName">
 						<select path="::domainAdminUserName"/>
 					</mapping>
