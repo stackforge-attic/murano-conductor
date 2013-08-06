@@ -12,7 +12,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<update-cf-stack template="Windows">
+		<update-cf-stack template="Windows" error="exception">
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
@@ -40,12 +40,19 @@
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
 				</report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</update-cf-stack>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'activeDirectory')].units[?(@.temp.instanceName and @.adminPassword and @.adminPassword != @.state.adminPassword)]"
             desc="Units of AD services which have got instances deployed but the local admin passwords not set yet">
-		<send-command template="SetPassword">
+		<send-command template="SetPassword" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -64,12 +71,19 @@
 					<select path="adminPassword"/>
 				</set>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'activeDirectory' and @.adminPassword and @.adminPassword != @.state.domainAdminPassword)].units[?(@.temp.instanceName and @.isMaster)]"
             desc="Deployed master-units of AD services for which the domain admin password is not set yet">
-		<send-command template="SetPassword">
+		<send-command template="SetPassword" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -88,6 +102,13 @@
 					<select path="::adminPassword"/>
 				</set>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to set domain administrator password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 
@@ -97,7 +118,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating Primary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<send-command template="CreatePrimaryDC">
+		<send-command template="CreatePrimaryDC" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -121,12 +142,19 @@
 					<parameter name="text">Primary Domain Controller created</parameter>
 				</report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to create a Primary DC on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'activeDirectory' and @.state.primaryDc and not @.state.primaryDcIp)].units[?(@.temp.instanceName and @.isMaster)]"
             desc="Master Units of AD services on which the Primary Domain Controller has been configured but DNS ip has not been asked for">
-		<send-command template="AskDnsIp" result="ip">
+		<send-command template="AskDnsIp" result="ip" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -138,12 +166,19 @@
 					<select source="ip" path="0.Result.0"/>
 				</set>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable assign DNS IP on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 
     <rule match="$.services[?(@.type != 'activeDirectory')].units[?(@.state.domain and not @.domain)]"
             desc="Any non-AD services of the environment which has been part of the domain but needs to leave it">
-        <send-command template="LeaveDomain">
+        <send-command template="LeaveDomain" error="exception">
             <parameter name="unit">
                 <select path="id" source="unit"/>
             </parameter>
@@ -165,6 +200,13 @@
                 </report>
                 <set path="state.domain"><null/></set>
             </success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) was unable to leave the domain due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
         </send-command>
     </rule>
 
@@ -178,7 +220,7 @@
 		</set>
 		<rule desc="Domain controller exists with the assigned DNS IP">
 			<parameter name="match">/$.services[?(@.type == 'activeDirectory' and @.domain == '<select path="domain"/>' and @.state.primaryDcIp)]</parameter>
-			<send-command template="JoinDomain">
+			<send-command template="JoinDomain" error="exception">
 				<parameter name="unit">
 					<select path="id" source="unit"/>
 				</parameter>
@@ -215,6 +257,13 @@
 						<parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) has joined domain <select path="domain"/></parameter>
 					</report>
 				</success>
+                <failure>
+                    <report entity="unit" level="error">
+					    <parameter name="id"><select path="id"/></parameter>
+					    <parameter name="text">Unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) was unable to join the domain due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				    </report>
+                <stop/>
+            </failure>
 			</send-command>
 		</rule>
 	</rule>
@@ -226,7 +275,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating Secondary Domain Controller on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<send-command template="CreateSecondaryDC">
+		<send-command template="CreateSecondaryDC" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -254,6 +303,17 @@
 					<parameter name="text">Domain <select path="::domain"/> created</parameter>
 				</report>
 			</success>
+             <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to create Secondary Domain Controller on unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                 <report entity="service" level="error">
+					<parameter name="id"><select path="::id"/></parameter>
+					<parameter name="text">Unable to create domain <select path="::domain"/></parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 </workflow>

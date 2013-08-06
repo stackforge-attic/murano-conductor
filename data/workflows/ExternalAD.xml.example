@@ -43,7 +43,7 @@
 			<parameter name="match">$[?(@.state.domain != '<select path="domain" source="ad"/>')]</parameter>
             <parameter name="desc">Units which are not part of the target domain but need to join</parameter>
 
-			<send-command template="JoinDomain">
+			<send-command template="JoinDomain" error="exception">
 				<parameter name="unit">
 					<select path="id"/>
 				</parameter>
@@ -82,6 +82,13 @@
 						<parameter name="text">Unit <select path="state.hostname"/> (<select path="name"/>) has joined domain <select path="domain" source="ad"/></parameter>
 					</report>
 				</success>
+				<failure>
+                    <report entity="unit" level="error">
+					    <parameter name="id"><select path="id"/></parameter>
+					    <parameter name="text">Unit <select path="state.hostname"/> (<select path="name"/>) was unable to join the domain due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				    </report>
+                    <stop/>
+                </failure>
 			</send-command>
 		</rule>
 	</rule>

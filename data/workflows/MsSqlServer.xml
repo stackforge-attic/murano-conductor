@@ -12,7 +12,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<update-cf-stack template="Windows">
+		<update-cf-stack template="Windows" error="exception">
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
@@ -40,12 +40,19 @@
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
 				</report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</update-cf-stack>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'msSqlServer' and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.temp.instanceName)]"
             desc="Units of SQL Server services which have got an instance deployed but has not got a correct admin password">
-		<send-command template="SetPassword">
+		<send-command template="SetPassword" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -64,6 +71,13 @@
 					<select path="::adminPassword"/>
 				</set>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 
@@ -74,7 +88,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating MS SQL Server on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<send-command template="InstallMsSqlServer">
+		<send-command template="InstallMsSqlServer" error="exception">
 			<parameter name="unit">
 				<select path="id"/>
 			</parameter>
@@ -99,6 +113,13 @@
 					<parameter name="text">MS SQL Server <select path="state.hostname"/> (<select path="name"/>) has started</parameter>
 				</report>
 			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to install MS SQL Server on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
 		</send-command>
 	</rule>
 

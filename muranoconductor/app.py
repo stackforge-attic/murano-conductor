@@ -77,7 +77,6 @@ class ConductorWorkflowService(service.Service):
     def _task_received(self, message):
         task = message.body or {}
         message_id = message.id
-        reporter = None
         with self.create_rmq_client() as mq:
             try:
                 log.info('Starting processing task {0}: {1}'.format(
@@ -96,7 +95,8 @@ class ConductorWorkflowService(service.Service):
                                         reporter)
                     workflows.append(workflow)
 
-                while True:
+                stop = False
+                while not stop:
                     try:
                         while True:
                             result = False
@@ -112,17 +112,18 @@ class ConductorWorkflowService(service.Service):
                             log.debug("No pending commands found, "
                                       "seems like we are done")
                             break
+                        if self.check_stop_requested(task):
+                            log.info("Workflow stop requested")
+                            stop = True
                     except Exception as ex:
+                        reporter.report_generic(
+                            "Unexpected error has occurred", ex.message,
+                            'error')
                         log.exception(ex)
                         break
                 command_dispatcher.close()
-            except reporting.ReportedException as e:
-                log.exception("Exception has occurred and was reported to API")
-            except Exception as e:
-                log.exception("Unexpected exception has occurred")
-                if reporter:
-                    reporter.report_generic("Unexpected error has occurred",
-                                            e.message, 'error')
+                if stop:
+                    log.info("Workflow stopped by 'stop' command")
             finally:
                 self.cleanup(task, reporter)
                 result_msg = Message()
@@ -156,3 +157,9 @@ class ConductorWorkflowService(service.Service):
             if reporter:
                 reporter.report_generic("Unexpected error has occurred",
                                         e.message, 'error')
+
+    def check_stop_requested(self, model):
+        if 'temp' in model:
+            if '_stop_requested' in model['temp']:
+                return model['temp']['_stop_requested']
+        return False
