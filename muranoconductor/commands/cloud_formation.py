@@ -137,7 +137,8 @@ class HeatExecutor(CommandBase):
             self._heat_client.stacks.create(
                 stack_name=self._stack,
                 parameters=arguments,
-                template=template)
+                template=template,
+                disable_rollback=False)
 
             log.debug('Waiting for the stack {0} to be create'.format(
                 self._stack))
