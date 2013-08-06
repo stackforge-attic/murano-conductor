@@ -89,6 +89,19 @@
 			<parameter name="service">
 				<select path="::id"/>
 			</parameter>
+            <parameter name="mappings">
+				<map>
+					<mapping name="domainAdminAccountName">
+						<select path="::domainAdminUserName"/>
+					</mapping>
+					<mapping name="domainAdminAccountPassword">
+						<select path="::domainAdminPassword"/>
+					</mapping>
+					<mapping name="domainName">
+						<select path="state.domain"/>
+					</mapping>
+				</map>
+            </parameter>
 			<success>
 				<set path="state.failoverClusterPrerequisitesInstalled"><true/></set>
                 <report entity="unit">
