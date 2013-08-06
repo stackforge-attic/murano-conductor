@@ -84,7 +84,8 @@ class TestHeatExecutor(unittest.TestCase):
                 "testName": {
                     "testKey": "testValue"
                 }
-            })
+            },
+            disable_rollback=False)
         callback.assert_called_with({})
 
     @mock.patch('heatclient.v1.client.Client')
