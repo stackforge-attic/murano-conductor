@@ -98,6 +98,8 @@ class ConductorWorkflowService(service.Service):
                 stop = False
                 while not stop:
                     try:
+                        for workflow in workflows:
+                            workflow.prepare()
                         while True:
                             result = False
                             for workflow in workflows:
