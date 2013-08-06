@@ -79,7 +79,8 @@ class TestHeatExecutor(unittest.TestCase):
             stack_name='stack',
             parameters={
                 'arg1': 'arg1Value',
-                'arg2': 'arg2Value'},
+                'arg2': 'arg2Value',
+                'disable_rollback': False},
             template={
                 "testName": {
                     "testKey": "testValue"
