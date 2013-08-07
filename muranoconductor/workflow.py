@@ -168,21 +168,27 @@ class Workflow(object):
         if rule is None:
             rule = context['__currentRuleId']
         if id is None:
-            id = context['__dataSource_currentObj']
+            cur_obj = context['__dataSource_currentObj']
+            if isinstance(cur_obj, dict) and ('id' in cur_obj):
+                id = cur_obj['id']
 
-        blacklist = context['/__blacklist']
-        blacklist[(rule, id)] = False
+        if rule is not None and id is not None:
+            blacklist = context['/__blacklist']
+            blacklist[(rule, id)] = False
 
     @staticmethod
     def _unmute_func(context, rule=None, id=None, **kwargs):
         if rule is None:
             rule = context['__currentRuleId']
         if id is None:
-            id = context['__dataSource_currentObj']
+            cur_obj = context['__dataSource_currentObj']
+            if isinstance(cur_obj, dict) and ('id' in cur_obj):
+                id = cur_obj['id']
 
-        blacklist = context['/__blacklist']
-        if (rule, id) in blacklist:
-            del blacklist[(rule, id)]
+        if rule is not None and id is not None:
+            blacklist = context['/__blacklist']
+            if (rule, id) in blacklist:
+                del blacklist[(rule, id)]
 
     @staticmethod
     def _rule_func(match, context, body, engine, limit=0, id=None, desc=None,
