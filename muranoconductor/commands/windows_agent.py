@@ -1,5 +1,6 @@
 import json
 import uuid
+import os
 
 from muranoconductor.openstack.common import log as logging
 from muranocommon.messaging import Message
@@ -20,11 +21,14 @@ class WindowsAgentExecutor(CommandBase):
 
     def execute(self, template, mappings, unit, service, callback,
                 timeout=None):
-        with open('data/templates/agent/%s.template' % template) as t_file:
+        template_path = 'data/templates/agent/%s.template' % template
+        with open(template_path) as t_file:
             template_data = t_file.read()
 
+        json_template = json.loads(template_data)
+        json_template = self.encode_scripts(json_template, template_path)
         template_data = muranoconductor.helpers.transform_json(
-            json.loads(template_data), mappings)
+            json_template, mappings)
 
         msg_id = str(uuid.uuid4()).lower()
         queue = ('%s-%s-%s' % (self._stack, service, unit)).lower()
@@ -41,6 +45,17 @@ class WindowsAgentExecutor(CommandBase):
         self._rmqclient.send(message=msg, key=queue)
         log.info('Sending RMQ message {0} to {1} with id {2}'.format(
             template_data, queue, msg_id))
+
+    def encode_scripts(self, json_data, template_path):
+        script_files = json_data["Scripts"]
+        scripts_folder = ''.join([os.path.dirname(template_path), "/scripts/"])
+        script_data = ''
+        for script in script_files:
+            log.debug('Loading script {0}.'.format(script))
+            with open(''.join([scripts_folder, script])) as script_file:
+                script_data = ''.join([script_data, script_file.read()])
+        json_data["Scripts"] = [script_data.encode('base64')]
+        return json_data
 
     def has_pending_commands(self):
         return len(self._pending_list) > 0
