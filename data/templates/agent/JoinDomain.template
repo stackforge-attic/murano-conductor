@@ -1,11 +1,9 @@
 {
+  "Scripts": [
+    "ImportCoreFunctions.ps1",
+    "Join-Domain.ps1"
+  ],
   "Commands": [
-    {
-      "Name": "Import-Module",
-      "Arguments": {
-        "Name": "CoreFunctions"
-      }
-    },
     {
       "Name": "Set-NetworkAdapterConfiguration",
       "Arguments": {
@@ -23,8 +21,5 @@
       }
     }
   ],
-  "RebootOnCompletion": 1,
-  "Scripts": [
-    "RnVuY3Rpb24gSm9pbi1Eb21haW4gewo8IwouU1lOT1BTSVMKRXhlY3V0ZXMgIkpvaW4gZG9tYWluIiBhY3Rpb24uCgpSZXF1aXJlcyAnQ29yZUZ1bmN0aW9ucycgbW9kdWxlLgojPgoJcGFyYW0gKAoJCVtTdHJpbmddICREb21haW5OYW1lID0gJycsCgkJW1N0cmluZ10gJFVzZXJOYW1lID0gJycsCgkJW1N0cmluZ10gJFBhc3N3b3JkID0gJycsCgkJW1N0cmluZ10gJE9VUGF0aCA9ICcnLAogICAgICAgIFtTd2l0Y2hdICRBbGxvd1Jlc3RhcnQKCSkKCQoJaWYgKCRVc2VyTmFtZSAtZXEgJycpIHsKCQkkVXNlck5hbWUgPSAnQWRtaW5pc3RyYXRvcicKCX0KCgkkQ3JlZGVudGlhbCA9IE5ldy1DcmVkZW50aWFsIC1Vc2VyTmFtZSAiJERvbWFpbk5hbWVcJFVzZXJOYW1lIiAtUGFzc3dvcmQgJFBhc3N3b3JkCgoJaWYgKFRlc3QtQ29tcHV0ZXJOYW1lIC1Eb21haW5OYW1lICREb21haW5OYW1lKSB7CiAgICAgICAgV3JpdGUtTG9nV2FybmluZyAiQ29tcHV0ZXIgYWxyZWFkeSBqb2luZWQgdG8gZG9tYWluICckRG9tYWluTmFtZSciCgl9CgllbHNlIHsKCQlXcml0ZS1Mb2cgIkpvaW5pbmcgY29tcHV0ZXIgdG8gZG9tYWluICckRG9tYWluTmFtZScgLi4uIgoJCQoJCWlmICgkT1VQYXRoIC1lcSAnJykgewoJCQlBZGQtQ29tcHV0ZXIgLURvbWFpbk5hbWUgJERvbWFpbk5hbWUgLUNyZWRlbnRpYWwgJENyZWRlbnRpYWwgLUZvcmNlIC1FcnJvckFjdGlvbiBTdG9wCgkJfQoJCWVsc2UgewoJCQlBZGQtQ29tcHV0ZXIgLURvbWFpbk5hbWUgJERvbWFpbk5hbWUgLUNyZWRlbnRpYWwgJENyZWRlbnRpYWwgLU9VUGF0aCAkT1VQYXRoIC1Gb3JjZSAtRXJyb3JBY3Rpb24gU3RvcAoJCX0KCQkKICAgICAgICBpZiAoJEFsbG93UmVzdGFydCkgewogICAgICAgICAgICBXcml0ZS1Mb2cgIlJlc3RhcnRpbmcgY29tcHV0ZXIgLi4uIgogICAgICAgICAgICBSZXN0YXJ0LUNvbXB1dGVyIC1Gb3JjZQogICAgICAgIH0KICAgICAgICBlbHNlIHsKICAgICAgICAgICAgV3JpdGUtTG9nICJQbGVhc2UgcmVzdGFydCB0aGUgY29tcHV0ZXIgbm93LiIKICAgICAgICB9Cgl9Cn0K"
-  ]
+  "RebootOnCompletion": 1
 }
