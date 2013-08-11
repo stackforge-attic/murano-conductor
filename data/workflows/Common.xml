@@ -10,8 +10,9 @@
 	</rule>
 
 	<rule match="$[?(not @.state.deleted)]" desc="Search through all the environments..">
-		<rule match="$.services[*].units[*]" desc="If any units exists">
-			<empty>
+		<rule match="$.services[*].units[*]" desc="If any units exists" limit="1">
+			<mute/>
+            <empty>
 				<delete-cf-stack>
 					<success>
 						<set path="/state.deleted"><true/></set>
