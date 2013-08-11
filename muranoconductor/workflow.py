@@ -168,9 +168,9 @@ class Workflow(object):
         if rule is None:
             rule = context['__currentRuleId']
         if id is None:
-            cur_obj = context['__dataSource_currentObj']
-            if isinstance(cur_obj, dict) and ('id' in cur_obj):
-                id = cur_obj['id']
+            id = context['__dataSource_currentObj_id']
+            if id == '#':
+                id = None
 
         if rule is not None and id is not None:
             blacklist = context['/__blacklist']
@@ -181,9 +181,9 @@ class Workflow(object):
         if rule is None:
             rule = context['__currentRuleId']
         if id is None:
-            cur_obj = context['__dataSource_currentObj']
-            if isinstance(cur_obj, dict) and ('id' in cur_obj):
-                id = cur_obj['id']
+            id = context['__dataSource_currentObj_id']
+            if id == '#':
+                id = None
 
         if rule is not None and id is not None:
             blacklist = context['/__blacklist']
@@ -194,8 +194,11 @@ class Workflow(object):
     def _rule_func(match, context, body, engine, limit=0, id=None, desc=None,
                    **kwargs):
         if not id:
-            id = object_id(body)
-        context['__currentRuleId'] = id
+            id = str(object_id(body))
+        parent_rule_id = context['__currentRuleId']
+        full_rule_id = id if not parent_rule_id \
+            else '{0}/{1}'.format(parent_rule_id, id)
+        context['__currentRuleId'] = full_rule_id
         position, match = Workflow._get_relative_position(match, context)
         if not desc:
             desc = match
@@ -206,6 +209,7 @@ class Workflow(object):
         selected = jsonpath.jsonpath([data], match, 'IPATH') or []
         index = 0
         blacklist = context['/__blacklist']
+        parent_object_id = context['__dataSource_currentObj_id']
         for found_match in selected:
             if 0 < int(limit) <= index:
                 break
@@ -214,19 +218,25 @@ class Workflow(object):
             context['__dataSource_currentPosition'] = new_position
             cur_obj = Workflow._get_path(context['/dataSource'], new_position)
 
-            use_blacklist = False
-            if isinstance(cur_obj, dict) and ('id' in cur_obj):
-                use_blacklist = True
-                if (id, cur_obj['id']) in blacklist:
+            current_object_id = '#'
+            if isinstance(cur_obj, dict) and ('id' in cur_obj) and \
+                    parent_object_id != '#':
+                current_object_id = cur_obj['id'] if not parent_object_id \
+                    else '{0}/{1}'.format(parent_object_id, cur_obj['id'])
+                if (full_rule_id, current_object_id) in blacklist:
                     continue
 
             context['__dataSource_currentObj'] = cur_obj
-            log.debug("Rule '{0}' matches on '{1}'".format(desc, cur_obj))
+            context['__dataSource_currentObj_id'] = current_object_id
+            log.debug("Rule '{0}' with ID = {2} matches on '{1}'"
+                      .format(desc, cur_obj, full_rule_id))
+            if current_object_id != '#':
+                log.debug('Muting {0} in rule {1}'.format(
+                    current_object_id, full_rule_id))
+                blacklist[(full_rule_id, current_object_id)] = True
             for element in body:
                 if element.tag == 'empty':
                     continue
-                if use_blacklist:
-                    blacklist[(id, cur_obj['id'])] = True
                 engine.evaluate(element, context)
                 if element.tag == 'rule' and context['/hasSideEffects']:
                     break
