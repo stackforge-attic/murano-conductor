@@ -5,6 +5,7 @@
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
+        <mute/>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.hostname and @.state.osImageName and not @.temp.instanceName)]"
@@ -85,11 +86,11 @@
 				</set>
 			</success>
             <failure>
-                <report entity="unit" level="error">
+                <report entity="unit" level="warning">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
 				</report>
-                <stop/>
+                <mute/>
             </failure>
 		</send-command>
 	</rule>
