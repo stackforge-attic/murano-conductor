@@ -5,9 +5,10 @@
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
+        <mute/>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'msSqlClusterServer')].units[?(@.state.hostname and @.state.osImageName and not @.temp.instanceName)]"
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
             desc="Units of SQL Server Cluster services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
@@ -24,16 +25,11 @@
 							<parameter name="service"><select path="::id"/></parameter>
 						</prepare-user-data>
 					</mapping>
+					<mapping name="instanceType"><select path="::flavor" default="m1.medium"/></mapping>
+					<mapping name="imageName"><select path="::osImage.name"/></mapping>
+					<mapping name="availabilityZone"><select path="::availabilityZone" default="nova"/></mapping>
 				</map>
 			</parameter>
-			<parameter name="arguments">
-				<map>
-					<argument name="InstanceType"><select path="::flavor" default="m1.medium"/></argument>
-					<argument name="ImageName"><select path="state.osImageName"/></argument>
-					<argument name="AvailabilityZone"><select path="::availabilityZone" default="nova"/></argument>
-				</map>
-			</parameter>
-
 			<success>
 				<set path="temp.instanceName"><select path="name"/></set>
 				<report entity="unit">
@@ -85,11 +81,11 @@
 				</set>
 			</success>
             <failure>
-                <report entity="unit" level="error">
+                <report entity="unit" level="warning">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
 				</report>
-                <stop/>
+                <mute/>
             </failure>
 		</send-command>
 	</rule>
@@ -184,7 +180,7 @@
 		</send-command>
     </rule>
 
-	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.failoverClusterCreated and not @.state.agEnvironmentConfigured)].units[*]" limit="1"
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.failoverClusterCreated and not @.state.agEnvironmentConfigured)].units[*]"
             desc="First unit of SQL Server Cluster services that is already has failover cluster created">
 		<send-command template="SqlServerCluster/ConfigureEnvironmentForAOAG" error="exception">
 			<parameter name="unit">

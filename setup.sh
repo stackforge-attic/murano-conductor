@@ -17,7 +17,7 @@
 
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
-PREREQ_PKGS="upstart wget git make python-pip python-dev python-mysqldb libxml2-dev libxslt-dev"
+PREREQ_PKGS="upstart wget git make python-pip python-dev python-mysqldb libxml2-dev libxslt-dev libffi-dev"
 SERVICE_SRV_NAME="murano-conductor"
 GIT_CLONE_DIR=`echo $SERVICE_CONTENT_DIRECTORY | sed -e "s/$SERVICE_SRV_NAME//"`
 ETC_CFG_DIR="/etc/$SERVICE_SRV_NAME"
@@ -72,7 +72,6 @@ CLONE_FROM_GIT=$1
 	do
 		in_sys_pkg $PKG
 	done 
-
 # If clone from git set
 	if [ ! -z $CLONE_FROM_GIT ]; then
 # Preparing clone root directory
@@ -92,20 +91,13 @@ CLONE_FROM_GIT=$1
 
 # Setupping...
 	log "Running setup.py"
-	#MRN_CND_SPY=$GIT_CLONE_DIR/$SERVICE_SRV_NAME/setup.py
 	MRN_CND_SPY=$SERVICE_CONTENT_DIRECTORY/setup.py
 	if [ -e $MRN_CND_SPY ];then
 		chmod +x $MRN_CND_SPY
-		log "$MRN_CND_SPY output:_____________________________________________________________"
-		#cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY install
-		#if [ $? -ne 0 ]; then
-		#	log "\"$MRN_CND_SPY\" python setup FAILS, exiting!"
-		#	exit 1
-		#fi
+		log "$MRN_CND_SPY output:_____________________________________________________________"		
 ## Setup through pip		
 		# Creating tarball
-		#cd $GIT_CLONE_DIR/$SERVICE_SRV_NAME && $MRN_CND_SPY sdist
-                rm -rf $SERVICE_CONTENT_DIRECTORY/*.egg-info
+		rm -rf $SERVICE_CONTENT_DIRECTORY/*.egg-info
 		cd $SERVICE_CONTENT_DIRECTORY && python $MRN_CND_SPY egg_info
                 if [ $? -ne 0 ];then
                         log "\"$MRN_CND_SPY\" egg info creation FAILS, exiting!!!"
@@ -118,8 +110,6 @@ CLONE_FROM_GIT=$1
 			exit 1
 		fi
 		# Running tarball install
-		#TRBL_FILE=$(basename `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/*.tar.gz`)
-		#pip install $GIT_CLONE_DIR/$SERVICE_SRV_NAME/dist/$TRBL_FILE
 		TRBL_FILE=$(basename `ls $SERVICE_CONTENT_DIRECTORY/dist/*.tar.gz`)
 		pip install $SERVICE_CONTENT_DIRECTORY/dist/$TRBL_FILE
 		if [ $? -ne 0 ];then
@@ -140,15 +130,12 @@ CLONE_FROM_GIT=$1
 	fi
 # making sample configs
 	log "Making sample configuration files at \"$ETC_CFG_DIR\""
-	#for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
-	for file in `ls $SERVICE_CONTENT_DIRECTORY/etc`
+	for file in $(ls $SERVICE_CONTENT_DIRECTORY/etc)
 	do
-		#cp -f "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc/$file" "$ETC_CFG_DIR/$file.sample"
 		cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
 	done
 # making templates data
 	log "Making templates directory"
-	#cp -f -R  "$GIT_CLONE_DIR/$SERVICE_SRV_NAME/data" "$ETC_CFG_DIR/"
 	cp -f -R  "$SERVICE_CONTENT_DIRECTORY/data" "$ETC_CFG_DIR/"
 }
 
@@ -156,7 +143,7 @@ CLONE_FROM_GIT=$1
 get_service_exec_path()
 {
 	if [ -z "$SERVICE_EXEC_PATH" ]; then
-		SERVICE_EXEC_PATH=`which muranoconductor`
+		SERVICE_EXEC_PATH=$(which muranoconductor)
 		if [ $? -ne 0 ]; then
 			log "Can't find \"conductor ($SERVICE_SRV_NAME)\", please install the \"$SERVICE_SRV_NAME\" by running \"$(basename "$0") install\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!"
 			exit 1
@@ -199,11 +186,9 @@ purgeinit()
 # uninstall
 uninst()
 {
-	#rm -f $SERVICE_EXEC_PATH
-	#rm -rf $SERVICE_CONTENT_DIRECTORY
 	# Uninstall trough  pip
 	# looking up for python package installed
-	PYPKG=`echo $SERVICE_SRV_NAME | sed -e 's/murano-//'`
+	PYPKG=$SERVICE_SRV_NAME
 	pip freeze | grep $PYPKG
 	if [ $? -eq 0 ]; then
 		log "Removing package \"$PYPKG\" with pip"

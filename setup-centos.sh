@@ -17,7 +17,7 @@
 
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
-PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python"
+PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python libffi-devel"
 PIPAPPS="pip python-pip pip-python"
 PIPCMD=""
 SERVICE_SRV_NAME="murano-conductor"
@@ -152,8 +152,7 @@ CLONE_FROM_GIT=$1
 	fi
 # making sample configs
 	log "Making sample configuration files at \"$ETC_CFG_DIR\""
-	#for file in `ls $GIT_CLONE_DIR/$SERVICE_SRV_NAME/etc`
-	for file in `ls $SERVICE_CONTENT_DIRECTORY/etc`
+	for file in $(ls $SERVICE_CONTENT_DIRECTORY/etc)
 	do
 		cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
 	done
@@ -166,7 +165,7 @@ CLONE_FROM_GIT=$1
 get_service_exec_path()
 {
 	if [ -z "$SERVICE_EXEC_PATH" ]; then
-		SERVICE_EXEC_PATH=`which conductor`
+		SERVICE_EXEC_PATH=$(which muranoconductor)
 		if [ $? -ne 0 ]; then
 			log "Can't find \"conductor ($SERVICE_SRV_NAME)\", please install the \"$SERVICE_SRV_NAME\" by running \"$(basename "$0") install\" or set variable SERVICE_EXEC_PATH=/path/to/daemon before running setup script, exiting!"
 			exit 1
@@ -206,7 +205,7 @@ uninst()
 	# Uninstall trough  pip
 	find_pip
         # looking up for python package installed
-	PYPKG=`echo $SERVICE_SRV_NAME | sed -e 's/murano-//'`
+	PYPKG=$SERVICE_SRV_NAME
 	_pkg=$($PIPCMD freeze | grep $PYPKG)
 	if [ $? -eq 0 ]; then
 		log "Removing package \"$PYPKG\" with pip"

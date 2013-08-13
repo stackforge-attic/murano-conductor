@@ -12,13 +12,10 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 
 import anyjson
 import eventlet
-from muranoconductor.reporting import ReportedException
 import types
-import jsonpath
 
 from muranoconductor.openstack.common import log as logging
 import muranoconductor.helpers
@@ -37,24 +34,36 @@ class HeatExecutor(CommandBase):
         self._delete_pending_list = []
         self._stack = stack
         self._reporter = reporter
-        settings = muranoconductor.config.CONF.heat
 
-        client = ksclient.Client(endpoint=settings.auth_url)
-        auth_data = client.tokens.authenticate(
-            tenant_id=tenant_id,
-            token=token)
+        keystone_settings = muranoconductor.config.CONF.keystone
+        heat_settings = muranoconductor.config.CONF.heat
 
-        scoped_token = auth_data.id
+        client = ksclient.Client(
+            endpoint=keystone_settings.auth_url,
+            cacert=keystone_settings.ca_file or None,
+            cert=keystone_settings.cert_file or None,
+            key=keystone_settings.key_file or None,
+            insecure=keystone_settings.insecure)
 
-        heat_url = jsonpath.jsonpath(
-            auth_data.serviceCatalog,
-            "$[?(@.name == 'heat')].endpoints[0].publicURL")[0]
+        if not client.authenticate(
+                auth_url=keystone_settings.auth_url,
+                tenant_id=tenant_id,
+                token=token):
+            raise heatclient.exc.HTTPUnauthorized()
+
+        heat_url = client.service_catalog.url_for(
+            service_type='orchestration',
+            endpoint_type=heat_settings.endpoint_type)
 
         self._heat_client = Client(
             '1',
             heat_url,
             token_only=True,
-            token=scoped_token)
+            token=client.auth_token,
+            ca_file=heat_settings.ca_file or None,
+            cert_file=heat_settings.cert_file or None,
+            key_file=heat_settings.key_file or None,
+            insecure=heat_settings.insecure)
 
     def execute(self, command, callback, **kwargs):
         log.debug('Got command {0} on stack {1}'.format(command, self._stack))
@@ -93,6 +102,8 @@ class HeatExecutor(CommandBase):
             self._delete_pending_list) > 0
 
     def execute_pending(self):
+        # wait for the stack not to be IN_PROGRESS
+        self._wait_state(lambda status: True)
         r1 = self._execute_pending_updates()
         r2 = self._execute_pending_deletes()
         return r1 or r2
@@ -126,7 +137,8 @@ class HeatExecutor(CommandBase):
                 log.debug(
                     'Waiting for the stack {0} to be update'.format(
                         self._stack))
-                outs = self._wait_state('UPDATE_COMPLETE')
+                outs = self._wait_state(
+                    lambda status: status == 'UPDATE_COMPLETE')
                 log.info('Stack {0} updated'.format(self._stack))
             else:
                 self._heat_client.stacks.create(
@@ -137,7 +149,8 @@ class HeatExecutor(CommandBase):
 
                 log.debug('Waiting for the stack {0} to be create'.format(
                     self._stack))
-                outs = self._wait_state('CREATE_COMPLETE')
+                outs = self._wait_state(
+                    lambda status: status == 'CREATE_COMPLETE')
                 log.info('Stack {0} created'.format(self._stack))
 
             pending_list = self._update_pending_list
@@ -163,7 +176,8 @@ class HeatExecutor(CommandBase):
                 stack_id=self._stack)
             log.debug(
                 'Waiting for the stack {0} to be deleted'.format(self._stack))
-            self._wait_state(['DELETE_COMPLETE', ''])
+            self._wait_state(
+                lambda status: status in ('DELETE_COMPLETE', 'NOT_FOUND'))
             log.info('Stack {0} deleted'.format(self._stack))
         except Exception as ex:
             log.exception(ex)
@@ -186,15 +200,10 @@ class HeatExecutor(CommandBase):
         except heatclient.exc.HTTPNotFound:
             return {}, {}
 
-    def _wait_state(self, state):
+    def _wait_state(self, status_func):
         tries = 4
         delay = 1
         while tries > 0:
-            if isinstance(state, types.ListType):
-                states = state
-            else:
-                states = [state]
-
             while True:
                 try:
                     stack_info = self._heat_client.stacks.get(
@@ -204,19 +213,21 @@ class HeatExecutor(CommandBase):
                     delay = 1
                 except heatclient.exc.HTTPNotFound:
                     stack_info = None
-                    status = ''
+                    status = 'NOT_FOUND'
                 except Exception:
                     tries -= 1
                     delay *= 2
+                    if not tries:
+                        raise
                     eventlet.sleep(delay)
                     break
 
                 if 'IN_PROGRESS' in status:
-                    eventlet.sleep(1)
+                    eventlet.sleep(2)
                     continue
-                if status not in states:
+                if not status_func(status):
                     raise EnvironmentError(
-                        "Unexpected state {0}".format(status))
+                        "Unexpected stack state {0}".format(status))
 
                 try:
                     return dict([(t['output_key'], t['output_value'])

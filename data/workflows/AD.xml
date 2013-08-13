@@ -4,9 +4,10 @@
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
+        <mute/>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'activeDirectory')].units[?(@.state.hostname and @.state.osImageName and not @.temp.instanceName)]"
+	<rule match="$.services[?(@.type == 'activeDirectory' and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
             desc="Units of AD services which have got hostname and image assigned, but instances not deployed yet">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
@@ -23,13 +24,9 @@
 							<parameter name="service"><select path="::id"/></parameter>
 						</prepare-user-data>
 					</mapping>
-				</map>
-			</parameter>
-			<parameter name="arguments">
-				<map>
-					<argument name="InstanceType"><select path="::flavor" default="m1.medium"/></argument>
-					<argument name="ImageName"><select path="state.osImageName"/></argument>
-					<argument name="AvailabilityZone"><select path="::availabilityZone" default="nova"/></argument>
+					<mapping name="instanceType"><select path="::flavor" default="m1.medium"/></mapping>
+					<mapping name="imageName"><select path="::osImage.name"/></mapping>
+					<mapping name="availabilityZone"><select path="::availabilityZone" default="nova"/></mapping>
 				</map>
 			</parameter>
 
@@ -72,11 +69,11 @@
 				</set>
 			</success>
             <failure>
-                <report entity="unit" level="error">
+                <report entity="unit" level="warning">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
 				</report>
-                <stop/>
+                <mute/>
             </failure>
 		</send-command>
 	</rule>
@@ -290,6 +287,9 @@
 					<mapping name="domainPassword">
 						<select path="::adminPassword"/>
 					</mapping>
+					<mapping name="domain">
+						<select path="::domain"/>
+					</mapping>
 				</map>
 			</parameter>
 			<success>
@@ -306,7 +306,7 @@
              <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to create Secondary Domain Controller on unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to create Secondary Domain Controller on unit <select path="state.hostname" /> (<select path="name" />) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
 				</report>
                  <report entity="service" level="error">
 					<parameter name="id"><select path="::id"/></parameter>

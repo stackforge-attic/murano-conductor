@@ -57,8 +57,8 @@ def update_cf_stack(engine, context, body, template, result=None, error=None,
 
     command_dispatcher.execute(
         name='cf', command='CreateOrUpdate', template=template,
-        mappings=kwargs.get('mappings', {}),
-        arguments=kwargs.get('arguments', {}),
+        mappings=(kwargs.get('mappings') or {}),
+        arguments=(kwargs.get('arguments') or {}),
         callback=callback)
 
 

@@ -26,12 +26,18 @@ from openstack.common import log as logging
 from config import Config
 import reporting
 from muranocommon.messaging import MqClient, Message
+from muranocommon.helpers.token_sanitizer import TokenSanitizer
 from muranoconductor import config as cfg
 
 import windows_agent
 import cloud_formation
 
 log = logging.getLogger(__name__)
+
+
+def secure_task(task):
+    sanitizer = TokenSanitizer()
+    return sanitizer.sanitize(task)
 
 
 class ConductorWorkflowService(service.Service):
@@ -80,7 +86,7 @@ class ConductorWorkflowService(service.Service):
         with self.create_rmq_client() as mq:
             try:
                 log.info('Starting processing task {0}: {1}'.format(
-                    message_id, anyjson.dumps(task)))
+                    message_id, anyjson.dumps(secure_task(task))))
                 reporter = reporting.Reporter(mq, message_id, task['id'])
                 config = Config()
 
@@ -135,7 +141,7 @@ class ConductorWorkflowService(service.Service):
                 mq.send(message=result_msg, key='task-results')
                 message.ack()
         log.info('Finished processing task {0}. Result = {1}'.format(
-            message_id, anyjson.dumps(task)))
+            message_id, anyjson.dumps(secure_task(task))))
 
     def cleanup(self, model, reporter):
         try:
