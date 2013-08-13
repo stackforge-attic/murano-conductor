@@ -42,11 +42,13 @@ def update_cf_stack(engine, context, body, template, result=None, error=None,
                 }
             failure_handler = body.find('failure')
             if failure_handler is not None:
-                log.warning("Handling exception in failure block")
+                log.warning("Handling exception in failure block",
+                            exc_info=True)
                 engine.evaluate_content(failure_handler, context)
                 return
             else:
-                log.error("No failure block found for exception")
+                log.error("No failure block found for exception",
+                          exc_info=True)
                 raise error_result
 
         success_handler = body.find('success')
