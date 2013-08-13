@@ -47,7 +47,7 @@ class WindowsAgentExecutor(CommandBase):
             template_data, queue, msg_id))
 
     def encode_scripts(self, json_data, template_path):
-        scripts_folder = ''.join([os.path.dirname(template_path), "/scripts/"])
+        scripts_folder = 'data/templates/agent/scripts'
         script_files = json_data.get("Scripts", [])
         scripts = []
         for script in script_files:
