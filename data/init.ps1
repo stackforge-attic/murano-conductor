@@ -10,6 +10,7 @@ $MuranoFileShare = '\\%MURANO_SERVER_ADDRESS%\share'
 $RestartRequired = $false
 
 Import-Module CoreFunctions
+Initialize-Logger 'CloudBase-Init' 'C:\Murano\PowerShell.log'
 
 Write-Log "Updating Murano Windows Agent."
 Stop-Service "Murano Agent"

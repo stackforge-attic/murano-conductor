@@ -1,4 +1,6 @@
+
 Import-Module CoreFunctions -Force
+Initialize-Logger 'MuranoAgent' 'C:\Murano\PowerShell.log'
 
 
 function Show-InvocationInfo {
@@ -27,7 +29,8 @@ function Show-InvocationInfo {
 
 
 $TrapHandler = {
-    Write-LogError @("<exception>", $_) -EntireObject
+    Write-LogError "<exception>"
+    Write-LogError $_ -EntireObject
     Write-LogError "</exception>"
     break
 }

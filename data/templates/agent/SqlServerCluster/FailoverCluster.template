@@ -15,16 +15,6 @@
         "UserPassword": "$domainAdminAccountPassword",
         "StaticAddress": "$clusterIP"
       }
-    },
-    {
-      "Name": "New-FailoverClusterSharedFolder",
-      "Arguments": {
-        "ClusterName": "$clusterName",
-        "UserName": "$domainAdminAccountName",
-        "UserPassword": "$domainAdminAccountPassword",
-        "ShareServer": "$shareServer",
-        "DomainName": "$domainName"
-      }
     }
   ],
   "RebootOnCompletion": 0
