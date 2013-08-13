@@ -72,9 +72,12 @@ def send_command(engine, context, body, template, service, unit, mappings=None,
                 context[error] = errors
             failure_handler = body.find('failure')
             if failure_handler is not None:
+                log.warning(
+                    "Handling errors ({0}) in failure block".format(errors),
+                    exc_info=True)
                 engine.evaluate_content(failure_handler, context)
             else:
-                log.error("No failure block found for exception")
+                log.error("No failure block found for errors", exc_info=True)
                 if isinstance(result_value, AgentTimeoutException):
                     raise result_value
                 else:
