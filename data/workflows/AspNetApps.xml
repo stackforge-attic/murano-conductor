@@ -24,16 +24,11 @@
 							<parameter name="service"><select path="::id"/></parameter>
 						</prepare-user-data>
 					</mapping>
+					<mapping name="instanceType"><select path="::flavor" default="m1.medium"/></mapping>
+					<mapping name="imageName"><select path="state.osImageName"/></mapping>
+					<mapping name="availabilityZone"><select path="::availabilityZone" default="nova"/></mapping>
 				</map>
 			</parameter>
-			<parameter name="arguments">
-				<map>
-					<argument name="InstanceType"><select path="::flavor" default="m1.medium"/></argument>
-					<argument name="ImageName"><select path="state.osImageName"/></argument>
-					<argument name="AvailabilityZone"><select path="::availabilityZone" default="nova"/></argument>
-				</map>
-			</parameter>
-
 			<success>
 				<set path="temp.instanceName"><select path="name"/></set>
 				<report entity="unit">

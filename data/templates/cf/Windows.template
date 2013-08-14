@@ -6,20 +6,6 @@
       "Description" : "Key Pair name for Load Balancer",
       "Type" : "String",
       "Default" : "murano-lb-key"
-    },
-    "InstanceType" : {
-      "Description" : "Amazon EC2 instance type",
-      "Type" : "String",
-      "Default" : "m1.medium"
-    },
-    "ImageName" : {
-      "Description" : "Image name",
-      "Type" : "String"
-    },
-    "AvailabilityZone" : {
-      "Description" : "The Availability Zone in which to launch the instance.",
-      "Type" : "String",
-      "Default" : "nova"
     }
   },
  
@@ -27,9 +13,9 @@
     "$instanceName": {
       "Type" : "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType" : { "Ref" : "InstanceType" },
-        "ImageId" : { "Ref" : "ImageName" },
-        "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
+        "InstanceType" : "$instanceType",
+        "ImageId" : "$imageName",
+        "AvailabilityZone" : "$availabilityZone",
         "UserData": "$userData"
       }
     }
