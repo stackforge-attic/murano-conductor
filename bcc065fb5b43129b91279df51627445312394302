@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: Alexander Tivelkov <ativelkov@mirantis.com>
+Code-Review+1: Alexander Tivelkov <ativelkov@mirantis.com>
+Approved+1: Georgy Okrokvertskhov <gokrokvertskhov@mirantis.com>
+Code-Review+2: Georgy Okrokvertskhov <gokrokvertskhov@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 14 Aug 2013 02:38:36 +0000
+Reviewed-on: https://review.openstack.org/41706
+Project: stackforge/murano-conductor
+Branch: refs/heads/release-0.2
