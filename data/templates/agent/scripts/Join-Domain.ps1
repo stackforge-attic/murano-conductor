@@ -49,6 +49,8 @@ Requires 'CoreFunctions' module.
     			Add-Computer -DomainName $DomainName -Credential $Credential -OUPath $OUPath -Force
     		}
 
+            $null = Exec 'ipconfig' @('/registerdns') -RedirectStreams
+
             Write-Log "Waiting 30 seconds to restart ..."
             Start-Sleep -Seconds 30
     		<#
