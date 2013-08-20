@@ -205,7 +205,7 @@ uninst()
 	# Uninstall trough  pip
 	find_pip
         # looking up for python package installed
-	PYPKG=$(echo $SERVICE_SRV_NAME | sed -e 's/murano-//')
+	PYPKG=$SERVICE_SRV_NAME
 	_pkg=$($PIPCMD freeze | grep $PYPKG)
 	if [ $? -eq 0 ]; then
 		log "Removing package \"$PYPKG\" with pip"
