@@ -17,7 +17,7 @@
 
 LOGLVL=1
 SERVICE_CONTENT_DIRECTORY=`cd $(dirname "$0") && pwd`
-PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python"
+PREREQ_PKGS="upstart wget git make python-pip python-devel mysql-connector-python libffi-devel"
 PIPAPPS="pip python-pip pip-python"
 PIPCMD=""
 SERVICE_SRV_NAME="murano-conductor"
