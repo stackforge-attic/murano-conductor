@@ -46,6 +46,11 @@ rabbit_opts = [
 
 heat_opts = [
     cfg.StrOpt('auth_url'),
+    cfg.BoolOpt('insecure', default=False),
+    cfg.StrOpt('ca_file'),
+    cfg.StrOpt('cert_file'),
+    cfg.StrOpt('key_file'),
+
 ]
 
 CONF = cfg.CONF

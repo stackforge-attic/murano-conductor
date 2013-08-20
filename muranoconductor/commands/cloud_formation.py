@@ -54,7 +54,11 @@ class HeatExecutor(CommandBase):
             '1',
             heat_url,
             token_only=True,
-            token=scoped_token)
+            token=scoped_token,
+            ca_file=settings.ca_file or None,
+            cert_file=settings.cert_file or None,
+            key_file=settings.key_file or None,
+            insecure=settings.insecure)
 
     def execute(self, command, callback, **kwargs):
         log.debug('Got command {0} on stack {1}'.format(command, self._stack))
