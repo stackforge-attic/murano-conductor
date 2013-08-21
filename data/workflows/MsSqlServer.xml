@@ -30,7 +30,7 @@
 				</map>
 			</parameter>
 			<success>
-				<set path="instanceName.instanceName"><select path="name"/></set>
+				<set path="temp.instanceName"><select path="name"/></set>
 				<report entity="unit">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
