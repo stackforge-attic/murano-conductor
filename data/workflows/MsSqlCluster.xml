@@ -180,7 +180,7 @@
 		</send-command>
     </rule>
 
-	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.failoverClusterCreated and not @.state.agEnvironmentConfigured)].units[*]" limit="1"
+	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.state.failoverClusterCreated and not @.state.agEnvironmentConfigured)].units[*]"
             desc="First unit of SQL Server Cluster services that is already has failover cluster created">
 		<send-command template="SqlServerCluster/ConfigureEnvironmentForAOAG" error="exception">
 			<parameter name="unit">
