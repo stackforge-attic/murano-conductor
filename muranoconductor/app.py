@@ -30,6 +30,7 @@ from muranoconductor import config as cfg
 
 import windows_agent
 import cloud_formation
+import runscripts
 
 log = logging.getLogger(__name__)
 

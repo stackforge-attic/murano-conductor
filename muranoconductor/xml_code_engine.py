@@ -98,8 +98,8 @@ def _dict_func(engine, body, context, **kwargs):
 
 def _array_func(engine, body, context, **kwargs):
     result = []
-    for item in body:
-        result.append(engine.evaluate(item, context))
+    for item in body.findall('item'):
+        result.append(engine.evaluate_content(item, context))
     return result
 
 
