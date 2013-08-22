@@ -7,7 +7,7 @@
         <mute/>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'activeDirectory')].units[?(@.state.hostname and @.state.osImageName and not @.temp.instanceName)]"
+	<rule match="$.services[?(@.type == 'activeDirectory' and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
             desc="Units of AD services which have got hostname and image assigned, but instances not deployed yet">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
@@ -25,7 +25,7 @@
 						</prepare-user-data>
 					</mapping>
 					<mapping name="instanceType"><select path="::flavor" default="m1.medium"/></mapping>
-					<mapping name="imageName"><select path="state.osImageName"/></mapping>
+					<mapping name="imageName"><select path="::osImage.name"/></mapping>
 					<mapping name="availabilityZone"><select path="::availabilityZone" default="nova"/></mapping>
 				</map>
 			</parameter>
