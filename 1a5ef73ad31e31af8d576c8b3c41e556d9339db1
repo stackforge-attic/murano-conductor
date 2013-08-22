@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Approved+1: Stan Lagun <slagun@mirantis.com>
+Code-Review+2: Stan Lagun <slagun@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 22 Aug 2013 18:00:30 +0000
+Reviewed-on: https://review.openstack.org/43323
+Project: stackforge/murano-conductor
+Branch: refs/heads/release-0.2
