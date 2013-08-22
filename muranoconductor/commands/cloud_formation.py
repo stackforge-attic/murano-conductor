@@ -37,9 +37,17 @@ class HeatExecutor(CommandBase):
         self._delete_pending_list = []
         self._stack = stack
         self._reporter = reporter
-        settings = muranoconductor.config.CONF.heat
 
-        client = ksclient.Client(endpoint=settings.auth_url)
+        keystone_settings = muranoconductor.config.CONF.keystone
+        heat_settings = muranoconductor.config.CONF.heat
+
+        client = ksclient.Client(
+            endpoint=keystone_settings.auth_url,
+            cacert=keystone_settings.ca_file or None,
+            cert=keystone_settings.cert_file or None,
+            key=keystone_settings.key_file or None,
+            insecure=keystone_settings.insecure)
+
         auth_data = client.tokens.authenticate(
             tenant_id=tenant_id,
             token=token)
@@ -55,10 +63,10 @@ class HeatExecutor(CommandBase):
             heat_url,
             token_only=True,
             token=scoped_token,
-            ca_file=settings.ca_file or None,
-            cert_file=settings.cert_file or None,
-            key_file=settings.key_file or None,
-            insecure=settings.insecure)
+            ca_file=heat_settings.ca_file or None,
+            cert_file=heat_settings.cert_file or None,
+            key_file=heat_settings.key_file or None,
+            insecure=heat_settings.insecure)
 
     def execute(self, command, callback, **kwargs):
         log.debug('Got command {0} on stack {1}'.format(command, self._stack))
