@@ -111,7 +111,7 @@ Function Deploy-WebAppFromGit {
         Write-Log "Fetching sources from Git ..."
 
         $null = New-Item -Path $TempPath -ItemType Container
-        Exec -FilePath 'git.exe' -ArgumentList @('clone', $URL) -WorkingDir $TempPath -RedirectStreams
+        $null = Exec -FilePath 'git.exe' -ArgumentList @('clone', $URL) -WorkingDir $TempPath -RedirectStreams
 
         $Path = @(Get-ChildItem $TempPath)[0].FullName
         #----------------------
@@ -130,7 +130,7 @@ Function Deploy-WebAppFromGit {
         # Start new processs with additional env variables:
         #* VisualStudioVersion = "10.0"
         #* EnableNuGetPackageRestore  = "true"
-        Exec -FilePath $msbuild `
+        $null = Exec -FilePath $msbuild `
             -ArgumentList @($SlnFiles[0].FullName, "/p:OutputPath=$OutputPath") `
             -Environment @{'VisualStudioVersion' = '10.0'; 'EnableNuGetPackageRestore' = 'true'} `
             -RedirectStreams
