@@ -80,6 +80,11 @@ http://www.iis.net/learn/manage/powershell/powershell-snap-in-creating-web-sites
         $null = $WebSite.Start()
 
         $null = Add-Content -Path "C:\Windows\System32\Drivers\etc\hosts" -Value "127.0.0.1   $Name"
+
+        # Remove standard IIS 'Hello World' application from localhost:80
+        $null = Get-WebBinding 'Default Web Site' | Remove-WebBinding
+        # Add new application on http://localhost:80
+        $null = New-WebBinding -Name "$Name" -IP "*" -Port 80 -Protocol http
     }
 }
 
