@@ -12,13 +12,10 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 
 import anyjson
 import eventlet
-from muranoconductor.reporting import ReportedException
 import types
-import jsonpath
 
 from muranoconductor.openstack.common import log as logging
 import muranoconductor.helpers
@@ -48,21 +45,21 @@ class HeatExecutor(CommandBase):
             key=keystone_settings.key_file or None,
             insecure=keystone_settings.insecure)
 
-        auth_data = client.tokens.authenticate(
-            tenant_id=tenant_id,
-            token=token)
+        if not client.authenticate(
+                auth_url=keystone_settings.auth_url,
+                tenant_id=tenant_id,
+                token=token):
+            raise heatclient.exc.HTTPUnauthorized()
 
-        scoped_token = auth_data.id
-
-        heat_url = jsonpath.jsonpath(
-            auth_data.serviceCatalog,
-            "$[?(@.name == 'heat')].endpoints[0].publicURL")[0]
+        heat_url = client.service_catalog.url_for(
+            service_type='orchestration',
+            endpoint_type=heat_settings.endpoint_type)
 
         self._heat_client = Client(
             '1',
             heat_url,
             token_only=True,
-            token=scoped_token,
+            token=client.auth_token,
             ca_file=heat_settings.ca_file or None,
             cert_file=heat_settings.cert_file or None,
             key_file=heat_settings.key_file or None,
