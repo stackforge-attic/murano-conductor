@@ -86,6 +86,8 @@ Configure
     key_file =
     # If set then the server's certificate will not be verified
     insecure = False
+    # Valid endpoint types: publicURL (default), internalURL, adminURL
+    endpoint_type = publicURL
 
     [rabbitmq]
     # Connection parameters to RabbitMQ service
