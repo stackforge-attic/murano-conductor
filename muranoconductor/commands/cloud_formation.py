@@ -102,6 +102,8 @@ class HeatExecutor(CommandBase):
             self._delete_pending_list) > 0
 
     def execute_pending(self):
+        # wait for the stack not to be IN_PROGRESS
+        self._wait_state(lambda status: True)
         r1 = self._execute_pending_updates()
         r2 = self._execute_pending_deletes()
         return r1 or r2
@@ -135,7 +137,8 @@ class HeatExecutor(CommandBase):
                 log.debug(
                     'Waiting for the stack {0} to be update'.format(
                         self._stack))
-                outs = self._wait_state('UPDATE_COMPLETE')
+                outs = self._wait_state(
+                    lambda status: status == 'UPDATE_COMPLETE')
                 log.info('Stack {0} updated'.format(self._stack))
             else:
                 self._heat_client.stacks.create(
@@ -146,7 +149,8 @@ class HeatExecutor(CommandBase):
 
                 log.debug('Waiting for the stack {0} to be create'.format(
                     self._stack))
-                outs = self._wait_state('CREATE_COMPLETE')
+                outs = self._wait_state(
+                    lambda status: status == 'CREATE_COMPLETE')
                 log.info('Stack {0} created'.format(self._stack))
 
             pending_list = self._update_pending_list
@@ -172,7 +176,8 @@ class HeatExecutor(CommandBase):
                 stack_id=self._stack)
             log.debug(
                 'Waiting for the stack {0} to be deleted'.format(self._stack))
-            self._wait_state(['DELETE_COMPLETE', ''])
+            self._wait_state(
+                lambda status: status in ('DELETE_COMPLETE', 'NOT_FOUND'))
             log.info('Stack {0} deleted'.format(self._stack))
         except Exception as ex:
             log.exception(ex)
@@ -195,15 +200,10 @@ class HeatExecutor(CommandBase):
         except heatclient.exc.HTTPNotFound:
             return {}, {}
 
-    def _wait_state(self, state):
+    def _wait_state(self, status_func):
         tries = 4
         delay = 1
         while tries > 0:
-            if isinstance(state, types.ListType):
-                states = state
-            else:
-                states = [state]
-
             while True:
                 try:
                     stack_info = self._heat_client.stacks.get(
@@ -213,19 +213,21 @@ class HeatExecutor(CommandBase):
                     delay = 1
                 except heatclient.exc.HTTPNotFound:
                     stack_info = None
-                    status = ''
+                    status = 'NOT_FOUND'
                 except Exception:
                     tries -= 1
                     delay *= 2
+                    if not tries:
+                        raise
                     eventlet.sleep(delay)
                     break
 
                 if 'IN_PROGRESS' in status:
-                    eventlet.sleep(1)
+                    eventlet.sleep(2)
                     continue
-                if status not in states:
+                if not status_func(status):
                     raise EnvironmentError(
-                        "Unexpected state {0}".format(status))
+                        "Unexpected stack state {0}".format(status))
 
                 try:
                     return dict([(t['output_key'], t['output_value'])
