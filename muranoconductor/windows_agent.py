@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os.path
 from muranoconductor.commands.windows_agent import AgentTimeoutException
 from muranoconductor.commands.windows_agent import UnhandledAgentException
 
@@ -23,9 +24,11 @@ log = logging.getLogger(__name__)
 
 
 def send_command(engine, context, body, template, service, unit, mappings=None,
-                 result=None, error=None, timeout=None, **kwargs):
+                 result=None, error=None, timeout=None, osVersion=None, **kwargs):
     if not mappings:
         mappings = {}
+    if osVersion:
+        template = os.path.join(osVersion, template)
     command_dispatcher = context['/commandDispatcher']
     if timeout:
         timeout = int(timeout)
