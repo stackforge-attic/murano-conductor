@@ -4,7 +4,7 @@ jsonpath
 Paste
 PasteDeploy
 iso8601>=0.1.4
-python-heatclient==0.2.1
+python-heatclient>=0.2.4
 jsonschema==2.0.0
 netaddr
 
