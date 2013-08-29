@@ -14,6 +14,7 @@
 # limitations under the License.
 import logging
 
+import anyjson
 import jsonpath
 import re
 import types
@@ -276,6 +277,10 @@ class Workflow(object):
         context['/dataSource']['temp']['_stop_requested'] = True
 
 
+def format_error(context, error, **kwargs):
+    error_data = context[error]
+    return anyjson.dumps(error_data)
+
 xml_code_engine.XmlCodeEngine.register_function(
     Workflow._rule_func, 'rule')
 
@@ -302,3 +307,6 @@ xml_code_engine.XmlCodeEngine.register_function(
 
 xml_code_engine.XmlCodeEngine.register_function(
     Workflow._unmute_func, 'unmute')
+
+xml_code_engine.XmlCodeEngine.register_function(
+    format_error, "format-error")
