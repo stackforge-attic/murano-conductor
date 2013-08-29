@@ -1,4 +1,5 @@
 anyjson
+pbr>=0.5.21,<1.0
 eventlet>=0.9.12
 jsonpath
 Paste
