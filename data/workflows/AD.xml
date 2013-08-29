@@ -287,6 +287,9 @@
 					<mapping name="domainPassword">
 						<select path="::adminPassword"/>
 					</mapping>
+					<mapping name="domain">
+						<select path="::domain"/>
+					</mapping>
 				</map>
 			</parameter>
 			<success>
@@ -303,7 +306,7 @@
              <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to create Secondary Domain Controller on unit <select path="state.hostname" source="unit"/> (<select path="name" source="unit"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to create Secondary Domain Controller on unit <select path="state.hostname" /> (<select path="name" />) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
 				</report>
                  <report entity="service" level="error">
 					<parameter name="id"><select path="::id"/></parameter>
