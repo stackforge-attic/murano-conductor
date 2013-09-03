@@ -15,7 +15,6 @@
 
 import deep
 import types
-from muranocommon.helpers.token_sanitizer import TokenSanitizer
 
 
 def transform_json(json, mappings):
@@ -101,8 +100,3 @@ def str2unicode(obj):
     elif isinstance(obj, types.ListType):
         return [str2unicode(t) for t in obj]
     return obj
-
-
-def secure_data(data):
-    sanitizer = TokenSanitizer()
-    return sanitizer.sanitize(data)
