@@ -6,6 +6,7 @@ from muranoconductor.openstack.common import log as logging
 from muranocommon.messaging import Message
 import muranoconductor.helpers
 from command import CommandBase
+from muranocommon.helpers.token_sanitizer import TokenSanitizer
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class WindowsAgentExecutor(CommandBase):
         self._rmqclient.declare(queue)
         self._rmqclient.send(message=msg, key=queue)
         log.info('Sending RMQ message {0} to {1} with id {2}'.format(
-            template_data, queue, msg_id))
+            TokenSanitizer().sanitize(template_data), queue, msg_id))
 
     def encode_scripts(self, json_data, template_path):
         scripts_folder = 'data/templates/agent/scripts'
