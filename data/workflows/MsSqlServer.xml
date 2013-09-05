@@ -78,7 +78,7 @@
 	</rule>
 
 
-	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.temp.instanceName and not @.state.msSqlServerInstalled)]"
+	<rule match="$.services[?(@.type == 'msSqlServer')].units[?(@.temp.instanceName and not @.state.msSqlServerInstalled and (not @.domain or @.domain == @.state.domain))]"
             desc="Units of SQL Server services which have got an instance deployed but have not got an SQL Server installed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
