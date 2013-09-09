@@ -11,4 +11,4 @@ netaddr
 
 oslo.config
 deep
-http://tarballs.openstack.org/murano-common/murano-common-release-0.2.tar.gz#egg=muranocommon-dev
+murano-common>=0.2.2
