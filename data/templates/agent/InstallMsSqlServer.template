@@ -4,7 +4,8 @@
     "OptionParser.ps1",
     "SQLServerOptionParsers.ps1",
     "SQLServerInstaller.ps1",
-    "Install-SQLServer.ps1"
+    "Install-SQLServer.ps1",
+    "Alter-FirewallRulesForSQL.ps1"
   ],
   "Commands": [
     {
@@ -13,6 +14,10 @@
         "SAPassword": "$saPassword",
         "MixedModeAuth": "$mixedModeAuth"
       }
+    },
+    {
+      "Name": "Enable-SQLExternalAccess",
+      "Arguments": {}
     }
   ],
   "RebootOnCompletion": 0
