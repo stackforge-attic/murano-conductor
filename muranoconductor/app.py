@@ -128,7 +128,8 @@ class ConductorWorkflowService(service.Service):
                 command_dispatcher.close()
                 if stop:
                     log.info("Workflow stopped by 'stop' command")
-            finally:
+
+                log.info("Workflow finished")
                 self.cleanup(task, reporter)
                 result_msg = Message()
                 result_msg.body = task
@@ -136,6 +137,12 @@ class ConductorWorkflowService(service.Service):
 
                 mq.send(message=result_msg, key='task-results')
                 message.ack()
+            except Exception as ex:
+                log.exception(ex)
+                log.debug("Non-processable message detected, ack-ing message")
+                message.ack()
+                raise
+
         log.info('Finished processing task {0}. Result = {1}'.format(
             message_id, anyjson.dumps(TokenSanitizer().sanitize(task))))
 
