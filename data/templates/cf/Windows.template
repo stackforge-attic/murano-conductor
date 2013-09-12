@@ -16,9 +16,36 @@
         "InstanceType" : "$instanceType",
         "ImageId" : "$imageName",
         "AvailabilityZone" : "$availabilityZone",
-        "UserData": "$userData"
+        "UserData": "$userData",
+        "SecurityGroups" : [ {"Ref" : "MuranoDefaultSecurityGroup"} ]
       }
-    }
+    },
+    "MuranoDefaultSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "SecurityGroupIngress": [
+                    {
+                        "ToPort": 3389,
+                        "IpProtocol": "tcp",
+                        "FromPort": 3389,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "ToPort": 22,
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "ToPort": -1,
+                        "IpProtocol": "icmp",
+                        "FromPort": -1,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "GroupDescription": "Default security group for Murano Environments"
+            }
+        }
    },
    
   "Outputs" : {

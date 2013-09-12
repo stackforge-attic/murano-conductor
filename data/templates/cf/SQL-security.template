@@ -1,26 +1,11 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-
-    "Parameters": {
-        "KeyName": {
-            "Description": "Key Pair name for Load Balancer",
-            "Type": "String",
-            "Default": "murano-lb-key"
-        }
-    },
-
     "Resources": {
         "$instanceName": {
-            "Type": "AWS::EC2::Instance",
             "Properties": {
-                "InstanceType": "$instanceType",
-                "ImageId": "$imageName",
-                "AvailabilityZone": "$availabilityZone",
-                "UserData": "$userData",
-                "SecurityGroups" : [ {"Ref" : "MsSqlSecuritygroup"} ]
+                "SecurityGroups" : [ {"Ref" : "MsSqlSecurityGroup"} ]
             }
         },
-        "MsSqlSecuritygroup": {
+        "MsSqlSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "SecurityGroupIngress": [
@@ -52,8 +37,5 @@
                 "GroupDescription": "Enable MS SQL access"
             }
         }
-    },
-    
-    "Outputs": {
     }
 }
