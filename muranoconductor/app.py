@@ -78,6 +78,8 @@ class ConductorWorkflowService(service.Service):
     def _task_received(self, message):
         task = message.body or {}
         message_id = message.id
+        do_ack = False
+        reporter = None
         with self.create_rmq_client() as mq:
             try:
                 secure_task = TokenSanitizer().sanitize(task)
@@ -128,14 +130,21 @@ class ConductorWorkflowService(service.Service):
                 command_dispatcher.close()
                 if stop:
                     log.info("Workflow stopped by 'stop' command")
+                do_ack = True
+            except Exception as ex:
+                log.exception(ex)
+                log.debug("Non-processable message detected, will ack message")
+                do_ack = True
             finally:
-                self.cleanup(task, reporter)
-                result_msg = Message()
-                result_msg.body = task
-                result_msg.id = message_id
+                if do_ack:
+                    self.cleanup(task, reporter)
+                    result_msg = Message()
+                    result_msg.body = task
+                    result_msg.id = message_id
 
-                mq.send(message=result_msg, key='task-results')
-                message.ack()
+                    mq.send(message=result_msg, key='task-results')
+                    message.ack()
+
         log.info('Finished processing task {0}. Result = {1}'.format(
             message_id, anyjson.dumps(TokenSanitizer().sanitize(task))))
 
