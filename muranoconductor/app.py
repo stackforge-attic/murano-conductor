@@ -79,63 +79,63 @@ class ConductorWorkflowService(service.Service):
         task = message.body or {}
         message_id = message.id
         with self.create_rmq_client() as mq:
-            try:
-                secure_task = TokenSanitizer().sanitize(task)
-                log.info('Starting processing task {0}: {1}'.format(
-                    message_id, anyjson.dumps(secure_task)))
-                reporter = reporting.Reporter(mq, message_id, task['id'])
-                config = Config()
+            secure_task = TokenSanitizer().sanitize(task)
+            log.info('Starting processing task {0}: {1}'.format(
+                message_id, anyjson.dumps(secure_task)))
+            reporter = reporting.Reporter(mq, message_id, task['id'])
+            config = Config()
 
-                command_dispatcher = CommandDispatcher('e' + task['id'], mq,
-                                                       task['token'],
-                                                       task['tenant_id'],
-                                                       reporter)
-                workflows = []
-                for path in glob.glob("data/workflows/*.xml"):
-                    log.debug('Loading XML {0}'.format(path))
-                    workflow = Workflow(path, task, command_dispatcher, config,
-                                        reporter)
-                    workflows.append(workflow)
+            command_dispatcher = CommandDispatcher('e' + task['id'], mq,
+                                                   task['token'],
+                                                   task['tenant_id'],
+                                                   reporter)
+            workflows = []
+            for path in glob.glob("data/workflows/*.xml"):
+                log.debug('Loading XML {0}'.format(path))
+                workflow = Workflow(path, task, command_dispatcher, config,
+                                    reporter)
+                workflows.append(workflow)
 
-                stop = False
-                while not stop:
-                    try:
+            stop = False
+            while not stop:
+                try:
+                    for workflow in workflows:
+                        workflow.prepare()
+                    while True:
+                        result = False
                         for workflow in workflows:
-                            workflow.prepare()
-                        while True:
-                            result = False
-                            for workflow in workflows:
-                                if workflow.execute():
-                                    result = True
-                            if not result:
-                                log.debug(
-                                    "No rules matched, "
-                                    "will now execute pending commands")
-                                break
-                        if not command_dispatcher.execute_pending():
-                            log.debug("No pending commands found, "
-                                      "seems like we are done")
+                            if workflow.execute():
+                                result = True
+                        if not result:
+                            log.debug(
+                                "No rules matched, "
+                                "will now execute pending commands")
                             break
-                        if self.check_stop_requested(task):
-                            log.info("Workflow stop requested")
-                            stop = True
-                    except Exception as ex:
-                        reporter.report_generic(
-                            "Unexpected error has occurred", ex.message,
-                            'error')
-                        log.exception(ex)
+                    if not command_dispatcher.execute_pending():
+                        log.debug("No pending commands found, "
+                                  "seems like we are done")
                         break
-                command_dispatcher.close()
-                if stop:
-                    log.info("Workflow stopped by 'stop' command")
-            finally:
-                self.cleanup(task, reporter)
-                result_msg = Message()
-                result_msg.body = task
-                result_msg.id = message_id
+                    if self.check_stop_requested(task):
+                        log.info("Workflow stop requested")
+                        stop = True
+                except Exception as ex:
+                    reporter.report_generic(
+                        "Unexpected error has occurred", ex.message,
+                        'error')
+                    log.exception(ex)
+                    break
+            command_dispatcher.close()
+            if stop:
+                log.info("Workflow stopped by 'stop' command")
 
-                mq.send(message=result_msg, key='task-results')
-                message.ack()
+            log.info("Workflow finished")
+            self.cleanup(task, reporter)
+            result_msg = Message()
+            result_msg.body = task
+            result_msg.id = message_id
+
+            mq.send(message=result_msg, key='task-results')
+            message.ack()
         log.info('Finished processing task {0}. Result = {1}'.format(
             message_id, anyjson.dumps(TokenSanitizer().sanitize(task))))
 
