@@ -1,26 +1,50 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
- 
-  "Parameters" : {
-    "KeyName" : {
-      "Description" : "Key Pair name for Load Balancer",
-      "Type" : "String",
-      "Default" : "murano-lb-key"
-    }
-  },
- 
-  "Resources" : {
-    "$instanceName": {
-      "Type" : "AWS::EC2::Instance",
-      "Properties": {
-        "InstanceType" : "$instanceType",
-        "ImageId" : "$imageName",
-        "AvailabilityZone" : "$availabilityZone",
-        "UserData": "$userData",
-        "SecurityGroups" : [ {"Ref" : "MuranoDefaultSecurityGroup"} ]
-      }
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Parameters": {
+        "KeyName": {
+            "Description": "Key Pair name for Load Balancer",
+            "Type": "String",
+            "Default": "murano-lb-key"
+        }
     },
-    "MuranoDefaultSecurityGroup": {
+
+    "Resources": {
+        "$instanceName": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": "$instanceType",
+                "ImageId": "$imageName",
+                "AvailabilityZone": "$availabilityZone",
+                "UserData": "$userData",
+                "SecurityGroups": [
+                    {
+                        "Ref": "MuranoDefaultSecurityGroup"
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "Ref": "$instancePort"
+                    }
+                ]
+            }
+        },
+        "$instancePort": {
+            "Type": "OS::Neutron::Port",
+            "Properties": {
+                "network_id": {
+                    "Ref": "network"
+                },
+                "fixed_ips": [
+                    {
+                        "subnet_id": {
+                            "Ref": "subnet"
+                        }
+                    }
+                ]
+            }
+        },
+        "MuranoDefaultSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "SecurityGroupIngress": [
@@ -45,9 +69,45 @@
                 ],
                 "GroupDescription": "Default security group for Murano Environments"
             }
+        },
+        "network": {
+            "Type": "OS::Neutron::Net",
+            "Properties": {
+                "name": "$networkName"
+            }
+        },
+        "subnet": {
+            "Type": "OS::Neutron::Subnet",
+            "Properties": {
+                "network_id": {
+                    "Ref": "network"
+                },
+                "ip_version": 4,
+                "cidr": "10.0.0.0/24",
+                "allocation_pools": [
+                    {
+                        "start": "10.0.0.20",
+                        "end": "10.0.0.250"
+                    }
+                ]
+            }
+        },
+        "router": {
+            "Type": "OS::Neutron::Router"
+        },
+        "router_interface": {
+            "Type": "OS::Neutron::RouterInterface",
+            "Properties": {
+                "router_id": {
+                    "Ref": "router"
+                },
+                "subnet_id": {
+                    "Ref": "subnet"
+                }
+            }
         }
-   },
-   
-  "Outputs" : {
-  } 
+    },
+
+    "Outputs": {
+    }
 }
