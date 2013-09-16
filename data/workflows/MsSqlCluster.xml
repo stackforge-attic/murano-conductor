@@ -18,6 +18,8 @@
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+                    <mapping name="instancePort">port-<select path="state.hostname"/></mapping>
+					<mapping name="networkName">network-<select path="::id"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
@@ -41,6 +43,33 @@
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
+				</report>
+                <stop/>
+            </failure>
+		</update-cf-stack>
+
+        <report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Applying address pair and opening SQL ports on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+		</report>
+		<update-cf-stack template="SQLCluster" error="exception">
+			<parameter name="mappings">
+				<map>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+					<mapping name="instancePort">port-<select path="state.hostname"/></mapping>
+					<mapping name="clusterIp"><select path="::clusterIp"/></mapping>
+				</map>
+			</parameter>
+			<success>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Address pair and SQL ports are open on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+				</report>
+			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to assign address pair and open SQL ports on instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
 				</report>
                 <stop/>
             </failure>

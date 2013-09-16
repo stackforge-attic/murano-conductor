@@ -17,6 +17,8 @@
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+                    <mapping name="instancePort">port-<select path="state.hostname"/></mapping>
+					<mapping name="networkName">network-<select path="::id"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
@@ -47,7 +49,7 @@
 
         <report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Openining SQL ports on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+			<parameter name="text">Opening SQL ports on <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
 		<update-cf-stack template="SQL-security" error="exception">
 			<parameter name="mappings">
