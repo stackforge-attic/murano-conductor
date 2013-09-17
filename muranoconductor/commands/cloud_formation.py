@@ -15,7 +15,6 @@
 
 import anyjson
 import eventlet
-import types
 
 from muranoconductor.openstack.common import log as logging
 import muranoconductor.helpers
@@ -102,8 +101,6 @@ class HeatExecutor(CommandBase):
             self._delete_pending_list) > 0
 
     def execute_pending(self):
-        # wait for the stack not to be IN_PROGRESS
-        self._wait_state(lambda status: True)
         r1 = self._execute_pending_updates()
         r2 = self._execute_pending_deletes()
         return r1 or r2
@@ -113,6 +110,9 @@ class HeatExecutor(CommandBase):
             return False
 
         try:
+            # wait for the stack not to be IN_PROGRESS
+            self._wait_state(lambda status: True)
+
             template, arguments = self._get_current_template()
             stack_exists = (template != {})
             # do not need to merge with current stack cause we rebuilding it
@@ -172,6 +172,9 @@ class HeatExecutor(CommandBase):
 
         log.debug('Deleting stack {0}'.format(self._stack))
         try:
+            # wait for the stack not to be IN_PROGRESS
+            self._wait_state(lambda status: True)
+
             self._heat_client.stacks.delete(
                 stack_id=self._stack)
             log.debug(
@@ -227,7 +230,7 @@ class HeatExecutor(CommandBase):
                     continue
                 if not status_func(status):
                     raise EnvironmentError(
-                        "Unexpected stack state {0}".format(status))
+                        'Unexpected stack state {0}'.format(status))
 
                 try:
                     return dict([(t['output_key'], t['output_value'])
