@@ -54,7 +54,7 @@
 		<update-cf-stack template="SQL-security" error="exception">
 			<parameter name="mappings">
 				<map>
-					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+					<mapping name="instancePort">port-<select path="state.hostname"/></mapping>
 				</map>
 			</parameter>
 			<success>
