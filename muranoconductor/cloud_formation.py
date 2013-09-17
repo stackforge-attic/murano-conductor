@@ -18,6 +18,7 @@ import config
 import random
 import string
 import time
+import datetime
 
 import xml_code_engine
 from openstack.common import log as logging
@@ -38,7 +39,7 @@ def update_cf_stack(engine, context, body, template, result=None, error=None,
                 context[error] = {
                     'message': getattr(error_result, 'message', None),
                     'strerror': getattr(error_result, 'strerror', None),
-                    'timestamp': time.time()
+                    'timestamp': datetime.datetime.now().isoformat()
                 }
             failure_handler = body.find('failure')
             if failure_handler is not None:

@@ -40,7 +40,7 @@
             <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
+					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -107,7 +107,7 @@
             <failure>
                 <report entity="unit" level="warning">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <mute/>
             </failure>
@@ -146,7 +146,7 @@
             <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to install prerequisites on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to install prerequisites on unit <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -197,7 +197,7 @@
             <failure>
                 <report entity="Service" level="error">
 					<parameter name="id"><select path="::id"/></parameter>
-					<parameter name="text">Unable to create failover cluster for SQL Server Service <select path="::name"/> due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to create failover cluster for SQL Server Service <select path="::name"/> due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -230,7 +230,7 @@
             <failure>
                 <report entity="service" level="error">
 					<parameter name="id"><select path="::id"/></parameter>
-					<parameter name="text">Unable to configure the environment for AlwaysOn Availability Group of SQL Server Cluster service (<select path="::name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to configure the environment for AlwaysOn Availability Group of SQL Server Cluster service (<select path="::name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -275,7 +275,7 @@
             <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to install SQL Server on unit <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to install SQL Server on unit <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -320,7 +320,7 @@
             <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to initialize AlwaysOn AG for <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to initialize AlwaysOn AG for <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -380,7 +380,7 @@
              <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to initialize primary replica for SQL Server AG for <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to initialize primary replica for SQL Server AG for <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
@@ -425,7 +425,7 @@
             <failure>
                 <report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to initialize secondary replica for SQL Server AG for <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to initialize secondary replica for SQL Server AG for <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
                 <stop/>
             </failure>
