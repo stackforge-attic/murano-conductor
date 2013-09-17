@@ -55,7 +55,6 @@
 		<update-cf-stack template="SQLCluster" error="exception">
 			<parameter name="mappings">
 				<map>
-					<mapping name="instanceName"><select path="state.hostname"/></mapping>
 					<mapping name="instancePort">port-<select path="state.hostname"/></mapping>
 					<mapping name="clusterIp"><select path="::clusterIp"/></mapping>
 				</map>

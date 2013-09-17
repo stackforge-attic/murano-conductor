@@ -1,19 +1,15 @@
 {
     "Resources": {
-        "$instanceName": {
-            "Properties": {
-                "SecurityGroups": [
-                    {
-                        "Ref": "MsSqlSecurityGroup"
-                    }
-                ]
-            }
-        },
         "$instancePort": {
             "Properties": {
                 "allowed_address_pairs": [
                     {
                         "ip_address": "$clusterIp"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "MsSqlSecurityGroup"
                     }
                 ]
             }
@@ -23,27 +19,27 @@
             "Properties": {
                 "SecurityGroupIngress": [
                     {
-                        "ToPort": 4022,
+                        "ToPort": "4022",
                         "IpProtocol": "tcp",
-                        "FromPort": 4022,
+                        "FromPort": "4022",
                         "CidrIp": "0.0.0.0/0"
                     },
                     {
-                        "ToPort": 135,
+                        "ToPort": "135",
                         "IpProtocol": "tcp",
-                        "FromPort": 135,
+                        "FromPort": "135",
                         "CidrIp": "0.0.0.0/0"
                     },
                     {
-                        "ToPort": 1433,
+                        "ToPort": "1433",
                         "IpProtocol": "tcp",
-                        "FromPort": 1433,
+                        "FromPort": "1433",
                         "CidrIp": "0.0.0.0/0"
                     },
                     {
-                        "ToPort": 1434,
+                        "ToPort": "1434",
                         "IpProtocol": "tcp",
-                        "FromPort": 1434,
+                        "FromPort": "1434",
                         "CidrIp": "0.0.0.0/0"
                     }
                 ],
