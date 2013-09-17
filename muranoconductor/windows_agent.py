@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os.path
+import datetime
 from muranoconductor.commands.windows_agent import AgentTimeoutException
 from muranoconductor.commands.windows_agent import UnhandledAgentException
 
@@ -42,26 +43,20 @@ def send_command(engine, context, body, template, service, unit,
         errors = []
         if isinstance(result_value, AgentTimeoutException):
             errors.append({
-                'type': "timeout",
-                'messages': [result_value.message],
-                'timeout': result_value.timeout
+                'source': 'timeout',
+                'message': result_value.message,
+                'timeout': result_value.timeout,
+                'timestamp': datetime.datetime.now().isoformat()
             })
         else:
             if result_value['IsException']:
-                msg = "A general exception has occurred in the Agent: " + \
-                      result_value['Result']
-                errors.append({
-                    'type': "general",
-                    'messages': [msg],
-                })
-
+                errors.append(dict(_get_exception_info(
+                    result_value.get('Result', [])), source='execution_plan'))
             else:
-                for res in result_value['Result']:
+                for res in result_value.get('Result', []):
                     if res['IsException']:
-                        errors.append({
-                            'type': 'inner',
-                            'messages': res['Result']
-                        })
+                        errors.append(dict(_get_exception_info(
+                            res.get('Result', [])), source='command'))
                     else:
                         ok.append(res)
 
@@ -77,8 +72,7 @@ def send_command(engine, context, body, template, service, unit,
             failure_handler = body.find('failure')
             if failure_handler is not None:
                 log.warning(
-                    "Handling errors ({0}) in failure block".format(errors),
-                    exc_info=True)
+                    'Handling errors ({0}) in failure block'.format(errors))
                 engine.evaluate_content(failure_handler, context)
             else:
                 log.error("No failure block found for errors", exc_info=True)
@@ -91,5 +85,19 @@ def send_command(engine, context, body, template, service, unit,
         name='agent', template=template, mappings=mappings,
         unit=unit, service=service, callback=callback, timeout=timeout)
 
+
+def _get_array_item(array, index):
+    return array[index] if len(array) > index else None
+
+
+def _get_exception_info(data):
+    data = data or []
+    return {
+        'type': _get_array_item(data, 0),
+        'message': _get_array_item(data, 1),
+        'command': _get_array_item(data, 2),
+        'details': _get_array_item(data, 3),
+        'timestamp':  datetime.datetime.now().isoformat()
+    }
 
 xml_code_engine.XmlCodeEngine.register_function(send_command, "send-command")
