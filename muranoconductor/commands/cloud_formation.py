@@ -134,11 +134,14 @@ class HeatExecutor(CommandBase):
                     stack_id=self._stack,
                     parameters=arguments,
                     template=template)
+
                 log.debug(
                     'Waiting for the stack {0} to be update'.format(
                         self._stack))
+
                 outs = self._wait_state(
                     lambda status: status == 'UPDATE_COMPLETE')
+
                 log.info('Stack {0} updated'.format(self._stack))
             else:
                 self._heat_client.stacks.create(
@@ -149,8 +152,10 @@ class HeatExecutor(CommandBase):
 
                 log.debug('Waiting for the stack {0} to be create'.format(
                     self._stack))
+
                 outs = self._wait_state(
                     lambda status: status == 'CREATE_COMPLETE')
+
                 log.info('Stack {0} created'.format(self._stack))
 
             pending_list = self._update_pending_list
@@ -182,6 +187,8 @@ class HeatExecutor(CommandBase):
             self._wait_state(
                 lambda status: status in ('DELETE_COMPLETE', 'NOT_FOUND'))
             log.info('Stack {0} deleted'.format(self._stack))
+        except heatclient.exc.HTTPNotFound:
+            log.warn('Deleting non-existing stack {0}'.format(self._stack))
         except Exception as ex:
             log.exception(ex)
 
