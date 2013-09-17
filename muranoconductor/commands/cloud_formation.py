@@ -182,6 +182,8 @@ class HeatExecutor(CommandBase):
             self._wait_state(
                 lambda status: status in ('DELETE_COMPLETE', 'NOT_FOUND'))
             log.info('Stack {0} deleted'.format(self._stack))
+        except heatclient.exc.HTTPNotFound:
+            log.warn('Deleting non-existing stack {0}'.format(self._stack))
         except Exception as ex:
             log.exception(ex)
 
