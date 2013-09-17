@@ -17,11 +17,6 @@
                 "ImageId": "$imageName",
                 "AvailabilityZone": "$availabilityZone",
                 "UserData": "$userData",
-                "SecurityGroups": [
-                    {
-                        "Ref": "MuranoDefaultSecurityGroup"
-                    }
-                ],
                 "NetworkInterfaces": [
                     {
                         "Ref": "$instancePort"
@@ -32,6 +27,11 @@
         "$instancePort": {
             "Type": "OS::Neutron::Port",
             "Properties": {
+                "security_groups": [
+                    {
+                        "Ref": "MuranoDefaultSecurityGroup"
+                    }
+                ],
                 "network_id": {
                     "Ref": "network"
                 },
@@ -49,21 +49,21 @@
             "Properties": {
                 "SecurityGroupIngress": [
                     {
-                        "ToPort": 3389,
+                        "ToPort": "3389",
                         "IpProtocol": "tcp",
-                        "FromPort": 3389,
+                        "FromPort": "3389",
                         "CidrIp": "0.0.0.0/0"
                     },
                     {
-                        "ToPort": 22,
+                        "ToPort": "22",
                         "IpProtocol": "tcp",
-                        "FromPort": 22,
+                        "FromPort": "22",
                         "CidrIp": "0.0.0.0/0"
                     },
                     {
-                        "ToPort": -1,
+                        "ToPort": "-1",
                         "IpProtocol": "icmp",
-                        "FromPort": -1,
+                        "FromPort": "-1",
                         "CidrIp": "0.0.0.0/0"
                     }
                 ],
