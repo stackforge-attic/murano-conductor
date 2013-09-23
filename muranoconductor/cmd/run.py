@@ -16,6 +16,8 @@
 import sys
 import os
 
+sys.path.append(os.path.join(os.path.curdir))
+
 from muranoconductor import config
 from muranoconductor.openstack.common import log
 from muranoconductor.openstack.common import service
