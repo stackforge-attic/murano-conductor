@@ -16,7 +16,14 @@
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.curdir))
+# If ../muranoconductor/__init__.py exists, add ../ to Python search path, so 
+# it will override what happens to be installed in /usr/(local/)lib/python...
+possible_topdir = os.path.normpath(os.path.join(os.path.abspath(__file__),
+                                                os.pardir,
+                                                os.pardir,
+                                                os.pardir))
+if os.path.exists(os.path.join(possible_topdir, 'muranoconductor', '__init__.py')):
+    sys.path.insert(0, possible_topdir)
 
 from muranoconductor import config
 from muranoconductor.openstack.common import log
