@@ -16,8 +16,14 @@
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.curdir))
+topdir = os.path.normpath(os.path.join(os.path.abspath(__file__),
+                                       os.pardir,
+                                       os.pardir,
+                                       os.pardir))
 
+if os.path.exists(os.path.join(topdir, 'muranoconductor', '__init__.py')):
+    sys.path.insert(0, topdir)
+    
 from muranoconductor import config
 from muranoconductor.openstack.common import log
 from muranoconductor.openstack.common import service
