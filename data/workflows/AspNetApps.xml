@@ -25,7 +25,7 @@
 						</prepare-user-data>
 					</mapping>
 					<mapping name="instanceType"><select path="::flavor" default="m1.medium"/></mapping>
-					<mapping name="imageName"><select path="::osImage.name"/></mapping>
+					<mapping name="imageName"><select path="::osImage.name"z/></mapping>
 					<mapping name="availabilityZone"><select path="::availabilityZone" default="nova"/></mapping>
 				</map>
 			</parameter>
