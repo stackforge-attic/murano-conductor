@@ -75,10 +75,10 @@ def delete_cf_stack(engine, context, body, **kwargs):
 
 
 def prepare_user_data(context, hostname, service, unit,
-                      template='Default', **kwargs):
+                      template='Default', initFile='init.ps1', **kwargs):
     settings = config.CONF.rabbitmq
 
-    with open('data/init.ps1') as init_script_file:
+    with open('data/{0}'.format(initFile)) as init_script_file:
         with open('data/templates/agent-config/{0}.template'.format(
                 template)) as template_file:
             init_script = init_script_file.read()
@@ -101,7 +101,7 @@ def prepare_user_data(context, hostname, service, unit,
             template_data = set_config_params(template_data, replacements)
 
             init_script = init_script.replace(
-                '%WINDOWS_AGENT_CONFIG_BASE64%',
+                '%AGENT_CONFIG_BASE64%',
                 base64.b64encode(template_data))
 
             init_script = init_script.replace('%INTERNAL_HOSTNAME%', hostname)
