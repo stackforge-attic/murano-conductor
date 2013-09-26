@@ -1,6 +1,6 @@
 #ps1
 
-$WindowsAgentConfigBase64 = '%WINDOWS_AGENT_CONFIG_BASE64%'
+$WindowsAgentConfigBase64 = '%AGENT_CONFIG_BASE64%'
 $WindowsAgentConfigFile = "C:\Murano\Agent\WindowsAgent.exe.config"
 $WindowsAgentLogFile = "C:\Murano\Agent\log.txt"
 

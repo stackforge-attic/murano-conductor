@@ -60,7 +60,10 @@ class HeatExecutor(CommandBase):
             heat_url,
             username='badusername',
             password='badpassword',
+<<<<<<< HEAD
             token_only=True,
+=======
+>>>>>>> 7d8197c... AttributeError: 'NoneType' object has no attribute 'encode' when using Havana's Heat
             token=client.auth_token,
             ca_file=heat_settings.ca_file or None,
             cert_file=heat_settings.cert_file or None,
