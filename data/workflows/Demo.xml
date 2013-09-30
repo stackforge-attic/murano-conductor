@@ -9,7 +9,7 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<update-cf-stack template="Windows" error="exception">
+		<update-cf-stack template="Demo" error="exception">
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
@@ -21,7 +21,6 @@
 						</prepare-user-data>
 					</mapping>
 					<mapping name="instanceType"><select path="::flavor" default="m1.medium"/></mapping>
-                    <mapping name="imageName"><select path="::osImage.name" /></mapping>
 					<mapping name="availabilityZone"><select path="::availabilityZone" default="nova"/></mapping>
 				</map>
 			</parameter>
