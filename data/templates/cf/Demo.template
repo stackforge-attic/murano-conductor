@@ -14,7 +14,7 @@
       "Type" : "AWS::EC2::Instance",
       "Properties": {
         "InstanceType" : "$instanceType",
-        "ImageId" : "murano-demo",
+        "ImageId" :"$imageName",
         "AvailabilityZone" : "$availabilityZone",
         "UserData": "$userData"
       }
