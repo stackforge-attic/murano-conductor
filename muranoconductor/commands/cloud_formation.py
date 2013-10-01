@@ -58,6 +58,8 @@ class HeatExecutor(CommandBase):
         self._heat_client = Client(
             '1',
             heat_url,
+            username='badusername',
+            password='badpassword',
             token_only=True,
             token=client.auth_token,
             ca_file=heat_settings.ca_file or None,
