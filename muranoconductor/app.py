@@ -83,8 +83,8 @@ class ConductorWorkflowService(service.Service):
         with self.create_rmq_client() as mq:
             try:
                 secure_task = TokenSanitizer().sanitize(task)
-                log.info('Starting processing task {0}: {1}'.format(
-                    message_id, anyjson.dumps(secure_task)))
+                log.info(_('Starting processing task {0}: {1}'.format(
+                    message_id, anyjson.dumps(secure_task))))
                 reporter = reporting.Reporter(mq, message_id, task['id'])
                 config = Config()
 
@@ -94,7 +94,7 @@ class ConductorWorkflowService(service.Service):
                                                        reporter)
                 workflows = []
                 for path in glob.glob("data/workflows/*.xml"):
-                    log.debug('Loading XML {0}'.format(path))
+                    log.debug(_('Loading XML {0}'.format(path)))
                     workflow = Workflow(path, task, command_dispatcher, config,
                                         reporter)
                     workflows.append(workflow)
@@ -115,11 +115,11 @@ class ConductorWorkflowService(service.Service):
                                     "will now execute pending commands")
                                 break
                         if not command_dispatcher.execute_pending():
-                            log.debug("No pending commands found, "
-                                      "seems like we are done")
+                            log.debug(_("No pending commands found, "
+                                      "seems like we are done"))
                             break
                         if self.check_stop_requested(task):
-                            log.info("Workflow stop requested")
+                            log.info(_("Workflow stop requested"))
                             stop = True
                     except Exception as ex:
                         reporter.report_generic(
@@ -133,7 +133,7 @@ class ConductorWorkflowService(service.Service):
                 do_ack = True
             except Exception as ex:
                 log.exception(ex)
-                log.debug("Non-processable message detected, will ack message")
+                log.debug(_("Non-processable message detected, will ack message"))
                 do_ack = True
             finally:
                 if do_ack:
@@ -145,8 +145,8 @@ class ConductorWorkflowService(service.Service):
                     mq.send(message=result_msg, key='task-results')
                     message.ack()
 
-        log.info('Finished processing task {0}. Result = {1}'.format(
-            message_id, anyjson.dumps(TokenSanitizer().sanitize(task))))
+        log.info(_('Finished processing task {0}. Result = {1}'.format(
+            message_id, anyjson.dumps(TokenSanitizer().sanitize(task)))))
 
     def cleanup(self, model, reporter):
         try:
