@@ -13,7 +13,7 @@
         "DomainName": "$domainName",
         "ClusterName": "$clusterName",
         "UserPassword": "$domainAdminAccountPassword",
-        "StaticAddress": "$clusterIP"
+        "StaticAddress": "$clusterIp"
       }
     }
   ],

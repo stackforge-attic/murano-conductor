@@ -155,8 +155,8 @@
 					<mapping name="domainAdminAccountPassword">
 						<select path="::domainAdminPassword"/>
 					</mapping>
-					<mapping name="clusterIP">
-						<select path="::clusterIP"/>
+					<mapping name="clusterIp">
+						<select path="::clusterIp"/>
 					</mapping>
 					<mapping name="shareServer">
 						<select path="state.domainIp"/>

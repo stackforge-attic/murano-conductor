@@ -109,6 +109,10 @@ def prepare_user_data(context, hostname, service, unit,
                 '%MURANO_SERVER_ADDRESS%',
                 config.CONF.file_server or settings.host)
 
+            init_script = init_script.replace(
+                '%CA_ROOT_CERT_BASE64%',
+                get_ca_certificate())
+
             return init_script
 
 
@@ -116,6 +120,14 @@ def set_config_params(template_data, replacements):
     for key in replacements:
         template_data = template_data.replace(key, str(replacements[key]))
     return template_data
+
+
+def get_ca_certificate():
+    ca_file = (config.CONF.rabbitmq.ca_certs or '').strip()
+    if not ca_file:
+        return ''
+    with open(ca_file) as stream:
+        return stream.read().encode('base64')
 
 
 counters = {}

@@ -4,13 +4,13 @@
     "Install-RolePrimaryDomainController.ps1"
   ],
   "Commands": [
-	  {
-		  "Name": "Install-RolePrimaryDomainController",
-		  "Arguments": {
-     	  "DomainName": "$domain",
- 			  "SafeModePassword": "$recoveryPassword"
-	 	  }
-	  }
+    {
+      "Name": "Install-RolePrimaryDomainController",
+      "Arguments": {
+         "DomainName": "$domain",
+         "SafeModePassword": "$recoveryPassword"
+       }
+    }
   ],
   "RebootOnCompletion": 1
 }
