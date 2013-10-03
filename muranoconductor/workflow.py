@@ -148,16 +148,16 @@ class Workflow(object):
         elif path.startswith('#'):
             context_path = ':' + path[1:]
             log.debug(
-                "Setting context variable '{0}' to '{1}'".format(
-                    *secure_data(context_path, body_data)))
+                _("Setting context variable '{0}' to '{1}'".format(
+                    *secure_data(context_path, body_data))))
             context[context_path] = body_data
             return
         if target:
             data = context[target]
             position = path.split('.')
             if Workflow._get_path(data, position) != body_data:
-                log.debug("Setting '{0}' to '{1}'".format(
-                    *secure_data(path, body_data)))
+                log.debug(_("Setting '{0}' to '{1}'".format(
+                    *secure_data(path, body_data))))
                 Workflow._set_path(data, position, body_data)
                 context['/hasSideEffects'] = True
 
@@ -165,8 +165,8 @@ class Workflow(object):
             data = context['/dataSource']
             new_position = Workflow._correct_position(path, context)
             if Workflow._get_path(data, new_position) != body_data:
-                log.debug("Setting '{0}' to '{1}'".format(
-                    *secure_data(path, body_data)))
+                log.debug(_("Setting '{0}' to '{1}'".format(
+                    *secure_data(path, body_data))))
                 Workflow._set_path(data, new_position, body_data)
                 context['/hasSideEffects'] = True
 
@@ -236,8 +236,8 @@ class Workflow(object):
             context['__dataSource_currentObj'] = cur_obj
             context['__dataSource_currentObj_id'] = current_object_id
             secure_obj = TokenSanitizer().sanitize(cur_obj)
-            log.debug("Rule '{0}' with ID = {2} matches on '{1}'"
-                      .format(desc, secure_obj, full_rule_id))
+            log.debug(-("Rule '{0}' with ID = {2} matches on '{1}'"
+                      .format(desc, secure_obj, full_rule_id)))
             if current_object_id != '#':
                 log.debug('Muting {0} in rule {1}'.format(
                     current_object_id, full_rule_id))
