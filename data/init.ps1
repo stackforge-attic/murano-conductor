@@ -7,6 +7,9 @@ $WindowsAgentLogFile = "C:\Murano\Agent\log.txt"
 $NewComputerName = '%INTERNAL_HOSTNAME%'
 $MuranoFileShare = '\\%MURANO_SERVER_ADDRESS%\share'
 
+$CaRootCertBase64 = "%CA_ROOT_CERT_BASE64%"
+$CaRootCertFile = "C:\Murano\ca.cert"
+
 $RestartRequired = $false
 
 Import-Module CoreFunctions
@@ -16,9 +19,23 @@ $ErrorActionPreference = 'Stop'
 
 trap {
     Write-LogError '<exception>'
-	Write-LogError $_ -EntireObject
-	Write-LogError '</exception>'
-	exit 1
+    Write-LogError $_ -EntireObject
+    Write-LogError '</exception>'
+    exit 1
+}
+
+Write-Log "Importing CA certificate ..."
+if ($CaRootCertBase64 -eq '') {
+    Write-Log "Importing CA certificate ... skipped"
+}
+else {
+    ConvertFrom-Base64String -Base64String $CaRootCertBase64 -Path $CaRootCertFile
+    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 $CaRootCertFile
+    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store("AuthRoot","LocalMachine")
+    $store.Open("MaxAllowed")
+    $store.Add($cert)
+    $store.Close()
+    Write-Log "Importing CA certificate ... done"
 }
 
 Write-Log "Updating Murano Windows Agent."
