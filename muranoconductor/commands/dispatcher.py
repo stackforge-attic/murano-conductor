@@ -15,7 +15,7 @@
 
 import command
 import cloud_formation
-import windows_agent
+import vm_agent
 
 
 class CommandDispatcher(command.CommandBase):
@@ -23,7 +23,7 @@ class CommandDispatcher(command.CommandBase):
         self._command_map = {
             'cf': cloud_formation.HeatExecutor(environment, token, tenant_id,
                                                reporter),
-            'agent': windows_agent.WindowsAgentExecutor(
+            'agent': vm_agent.VmAgentExecutor(
                 environment, rmqclient, reporter)
         }
 

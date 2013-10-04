@@ -29,7 +29,7 @@ from muranocommon.messaging import MqClient, Message
 from muranoconductor import config as cfg
 from muranocommon.helpers.token_sanitizer import TokenSanitizer
 
-import windows_agent
+import vm_agent
 import cloud_formation
 
 log = logging.getLogger(__name__)
