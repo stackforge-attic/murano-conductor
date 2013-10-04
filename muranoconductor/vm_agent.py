@@ -14,8 +14,8 @@
 # limitations under the License.
 import os.path
 import datetime
-from muranoconductor.commands.windows_agent import AgentTimeoutException
-from muranoconductor.commands.windows_agent import UnhandledAgentException
+from muranoconductor.commands.vm_agent import AgentTimeoutException
+from muranoconductor.commands.vm_agent import UnhandledAgentException
 
 import xml_code_engine
 

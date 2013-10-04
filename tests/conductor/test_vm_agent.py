@@ -18,10 +18,10 @@ import mock
 import mockfs
 import json
 
-from muranoconductor.commands.windows_agent import WindowsAgentExecutor
+from muranoconductor.commands.vm_agent import VmAgentExecutor
 
 
-class TestWindowsAgent(unittest.TestCase):
+class TestVmAgent(unittest.TestCase):
     def setUp(self):
         self.mfs = mockfs.replace_builtins()
         self.template = {
@@ -53,7 +53,7 @@ class TestWindowsAgent(unittest.TestCase):
         reporter = mock.MagicMock()
         rmqclient.declare = mock.Mock()
 
-        executor = WindowsAgentExecutor(stack, rmqclient, reporter)
+        executor = VmAgentExecutor(stack, rmqclient, reporter)
         result = executor.encode_scripts(self.template, self.template_path)
         encoded = [
             'ZnVuY3Rpb24gR2V0RE5TaXAoKXsKdGVzdAp9Cg==\n',
