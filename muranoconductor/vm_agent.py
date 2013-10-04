@@ -14,14 +14,61 @@
 # limitations under the License.
 import os.path
 import datetime
-from muranoconductor.commands.windows_agent import AgentTimeoutException
-from muranoconductor.commands.windows_agent import UnhandledAgentException
+from muranoconductor.commands.vm_agent import AgentTimeoutException
+from muranoconductor.commands.vm_agent import UnhandledAgentException
 
 import xml_code_engine
 
 from openstack.common import log as logging
 
 log = logging.getLogger(__name__)
+
+
+def _extract_results(result_value, ok, errors):
+    if isinstance(result_value, AgentTimeoutException):
+        errors.append({
+            'source': 'timeout',
+            'message': result_value.message,
+            'timeout': result_value.timeout,
+            'timestamp': datetime.datetime.now().isoformat()
+        })
+    elif isinstance(result_value, dict):
+        if result_value.get('FormatVersion', '1.0.0').startswith('1.'):
+            _extract_v1_results(result_value, ok, errors)
+        else:
+            _extract_v2_results(result_value, ok, errors)
+
+
+def _extract_v1_results(result_value, ok, errors):
+        if result_value['IsException']:
+            errors.append(dict(_get_exception_info(
+                result_value.get('Result', [])), source='execution_plan'))
+        else:
+            for res in result_value.get('Result', []):
+                if res['IsException']:
+                    errors.append(dict(_get_exception_info(
+                        res.get('Result', [])), source='command'))
+                else:
+                    ok.append(res)
+
+
+def _extract_v2_results(result_value, ok, errors):
+    error_code = result_value.get('ErrorCode', 0)
+    if not error_code:
+        ok.append(result_value.get('Body'))
+    else:
+        body = result_value.get('Body') or {}
+        err = {
+            'message': body.get('Message'),
+            'details': body.get('AdditionalInfo'),
+            'errorCode': error_code,
+            'time': result_value.get('Time')
+        }
+        for attr in ('Message', 'AdditionalInfo'):
+            if attr in body:
+                del attr[body]
+        err['extra'] = body if body else None
+        errors.append(err)
 
 
 def send_command(engine, context, body, template, service, unit,
@@ -41,24 +88,7 @@ def send_command(engine, context, body, template, service, unit,
                 template, result_value, unit))
         ok = []
         errors = []
-        if isinstance(result_value, AgentTimeoutException):
-            errors.append({
-                'source': 'timeout',
-                'message': result_value.message,
-                'timeout': result_value.timeout,
-                'timestamp': datetime.datetime.now().isoformat()
-            })
-        else:
-            if result_value['IsException']:
-                errors.append(dict(_get_exception_info(
-                    result_value.get('Result', [])), source='execution_plan'))
-            else:
-                for res in result_value.get('Result', []):
-                    if res['IsException']:
-                        errors.append(dict(_get_exception_info(
-                            res.get('Result', [])), source='command'))
-                    else:
-                        ok.append(res)
+        _extract_results(result_value, ok, errors)
 
         if ok:
             if result is not None:
