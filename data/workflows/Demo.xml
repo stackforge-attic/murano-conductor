@@ -33,12 +33,12 @@
 				</report>
 			</success>
 		<failure>
-		<report entity="unit" level="error">
-					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="message" default="unknown Heat error"/> </parameter>
-				</report>
-				<stop/>
-			</failure>
+            <report entity="unit" level="error">
+                <parameter name="id"><select path="id"/></parameter>
+                <parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/> </parameter>
+            </report>
+    		<stop/>
+		</failure>
 		</update-cf-stack>
 	</rule>
 
@@ -66,7 +66,7 @@
 			<failure>
 				<report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Unable to install demo service on <select path="state.hostname"/> (<select path="name"/>) due to <select source="exception" path="0.messages.0" default="unknown Agent error"/> </parameter>
+					<parameter name="text">Unable to install demo service on <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
 				<stop/>
 			</failure>
