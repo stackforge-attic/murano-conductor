@@ -1,6 +1,7 @@
-import json
 import uuid
+import yaml
 import os
+import types
 
 from muranoconductor.openstack.common import log as logging
 from muranocommon.messaging import Message
@@ -11,7 +12,7 @@ from muranocommon.helpers.token_sanitizer import TokenSanitizer
 log = logging.getLogger(__name__)
 
 
-class WindowsAgentExecutor(CommandBase):
+class VmAgentExecutor(CommandBase):
     def __init__(self, stack, rmqclient, reporter):
         self._stack = stack
         self._rmqclient = rmqclient
@@ -23,15 +24,16 @@ class WindowsAgentExecutor(CommandBase):
     def execute(self, template, mappings, unit, service, callback,
                 timeout=None):
         template_path = 'data/templates/agent/%s.template' % template
-        with open(template_path) as t_file:
-            template_data = t_file.read()
+        #with open(template_path) as t_file:
+        #    template_data = t_file.read()
+        #
+        #json_template = json.loads(template_data)
+        #json_template = self.encode_scripts(json_template, template_path)
+        template, msg_id = self._build_execution_plan(template_path)
 
-        json_template = json.loads(template_data)
-        json_template = self.encode_scripts(json_template, template_path)
-        template_data = muranoconductor.helpers.transform_json(
-            json_template, mappings)
+        template = muranoconductor.helpers.transform_json(
+            template, mappings)
 
-        msg_id = str(uuid.uuid4()).lower()
         queue = ('%s-%s-%s' % (self._stack, service, unit)).lower()
         self._pending_list.append({
             'id': msg_id,
@@ -40,16 +42,28 @@ class WindowsAgentExecutor(CommandBase):
         })
 
         msg = Message()
-        msg.body = template_data
+        msg.body = template
         msg.id = msg_id
         self._rmqclient.declare(queue)
         self._rmqclient.send(message=msg, key=queue)
         log.info('Sending RMQ message {0} to {1} with id {2}'.format(
-            TokenSanitizer().sanitize(template_data), queue, msg_id))
+            TokenSanitizer().sanitize(template), queue, msg_id))
 
-    def encode_scripts(self, json_data, template_path):
-        scripts_folder = 'data/templates/agent/scripts'
-        script_files = json_data.get("Scripts", [])
+    def _build_execution_plan(self, path):
+        with open(path) as stream:
+            template = yaml.load(stream)
+        if not isinstance(template, types.DictionaryType):
+            raise ValueError('Incorrect execution plan ' + path)
+        format_version = template.get('FormatVersion')
+        if not format_version or format_version.startswith('1.'):
+            return self._build_v1_execution_plan(template, path)
+        else:
+            return self._build_v2_execution_plan(template, path)
+
+    def _build_v1_execution_plan(self, template, path):
+        scripts_folder = os.path.join(
+            os.path.dirname(path), 'scripts')
+        script_files = template.get('Scripts', [])
         scripts = []
         for script in script_files:
             script_path = os.path.join(scripts_folder, script)
@@ -57,8 +71,54 @@ class WindowsAgentExecutor(CommandBase):
             with open(script_path) as script_file:
                 script_data = script_file.read()
                 scripts.append(script_data.encode('base64'))
-        json_data["Scripts"] = scripts
-        return json_data
+        template['Scripts'] = scripts
+        return template, uuid.uuid4().hex
+
+    def _build_v2_execution_plan(self, template, path):
+        scripts_folder = os.path.join(
+            os.path.dirname(path), 'scripts')
+        plan_id = uuid.uuid4().hex
+        template['ID'] = plan_id
+        if 'Action' not in template:
+            template['Action'] = 'Execute'
+        if 'Files' not in template:
+            template['Files'] = {}
+
+        files = {}
+        for name, script in template.get('Scripts', {}).items():
+            if 'EntryPoint' not in script:
+                raise ValueError('No entry point in script ' + name)
+            script['EntryPoint'] = self._place_file(
+                scripts_folder, script['EntryPoint'], template, files)
+            if 'Files' in script:
+                for i in range(0, len(script['Files'])):
+                    script['Files'][i] = self._place_file(
+                        scripts_folder, script['Files'][i], template, files)
+
+        return template, plan_id
+
+    def _place_file(self, folder, name, template, files):
+        use_base64 = False
+        if name.startswith('<') and name.endswith('>'):
+            use_base64 = True
+            name = name[1:len(name)-1]
+        if name in files:
+            return files[name]
+
+        file_id = uuid.uuid4().hex
+        body_type = 'Base64' if use_base64 else 'Text'
+        with open(os.path.join(folder, name)) as stream:
+            body = stream.read()
+        if use_base64:
+            body = body.encode('base64')
+
+        template['Files'][file_id] = {
+            'Name': name,
+            'BodyType': body_type,
+            'Body': body
+        }
+        files[name] = file_id
+        return file_id
 
     def has_pending_commands(self):
         return len(self._pending_list) > 0
