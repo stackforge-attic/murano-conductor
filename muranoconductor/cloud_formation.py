@@ -124,7 +124,7 @@ def set_config_params(template_data, replacements):
 
 
 def get_ca_certificate():
-    ca_file = (config.CONF.rabbitmq.ca_file or '').strip()
+    ca_file = (config.CONF.rabbitmq.ca_certs or '').strip()
     if not ca_file:
         return ''
     with open(ca_file) as stream:
