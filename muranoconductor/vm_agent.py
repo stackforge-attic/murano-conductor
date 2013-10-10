@@ -66,7 +66,7 @@ def _extract_v2_results(result_value, ok, errors):
         }
         for attr in ('Message', 'AdditionalInfo'):
             if attr in body:
-                del attr[body]
+                del body[attr]
         err['extra'] = body if body else None
         errors.append(err)
 
@@ -91,7 +91,7 @@ def send_command(engine, context, body, template, service, unit,
         errors = []
         _extract_results(result_value, ok, errors)
 
-        if ok:
+        if ok or not errors:
             if result is not None:
                 context[result] = ok
             success_handler = body.find('success')
