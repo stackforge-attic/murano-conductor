@@ -17,31 +17,7 @@
                 "ImageId": "$imageName",
                 "AvailabilityZone": "$availabilityZone",
                 "UserData": "$userData",
-                "NetworkInterfaces": [
-                    {
-                        "Ref": "$instancePort"
-                    }
-                ]
-            }
-        },
-        "$instancePort": {
-            "Type": "OS::Neutron::Port",
-            "Properties": {
-                "security_groups": [
-                    {
-                        "Ref": "MuranoDefaultSecurityGroup"
-                    }
-                ],
-                "network_id": {
-                    "Ref": "network"
-                },
-                "fixed_ips": [
-                    {
-                        "subnet_id": {
-                            "Ref": "subnet"
-                        }
-                    }
-                ]
+                "SecurityGroups" : [ { "Ref" : "MuranoDefaultSecurityGroup"}]
             }
         },
         "MuranoDefaultSecurityGroup": {
@@ -68,42 +44,6 @@
                     }
                 ],
                 "GroupDescription": "Default security group for Murano Environments"
-            }
-        },
-        "network": {
-            "Type": "OS::Neutron::Net",
-            "Properties": {
-                "name": "$networkName"
-            }
-        },
-        "subnet": {
-            "Type": "OS::Neutron::Subnet",
-            "Properties": {
-                "network_id": {
-                    "Ref": "network"
-                },
-                "ip_version": 4,
-                "cidr": "10.0.0.0/24",
-                "allocation_pools": [
-                    {
-                        "start": "10.0.0.20",
-                        "end": "10.0.0.250"
-                    }
-                ]
-            }
-        },
-        "router": {
-            "Type": "OS::Neutron::Router"
-        },
-        "router_interface": {
-            "Type": "OS::Neutron::RouterInterface",
-            "Properties": {
-                "router_id": {
-                    "Ref": "router"
-                },
-                "subnet_id": {
-                    "Ref": "subnet"
-                }
             }
         }
     },
