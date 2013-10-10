@@ -1,9 +1,8 @@
 unittest2
-mock
+mock>=1.0
 nose
 nose-exclude
 nosexcover
 #openstack.nose_plugin
 pep8
 sphinx>=1.1.2
-mockfs
