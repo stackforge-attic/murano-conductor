@@ -58,8 +58,6 @@ class HeatExecutor(CommandBase):
         self._heat_client = Client(
             '1',
             heat_url,
-            username='badusername',
-            password='badpassword',
             token_only=True,
             token=client.auth_token,
             ca_file=heat_settings.ca_file or None,
@@ -147,7 +145,7 @@ class HeatExecutor(CommandBase):
                     stack_name=self._stack,
                     parameters=arguments,
                     template=template,
-                    disable_rollback=False)
+                    disable_rollback=True)
 
                 log.debug('Waiting for the stack {0} to be create'.format(
                     self._stack))
