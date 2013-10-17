@@ -42,15 +42,22 @@ class TestHeatExecutor(unittest.TestCase):
 
         auth_data = ksclient_mock().tokens.authenticate()
         auth_data.id = '123456'
-        auth_data.serviceCatalog = [{
-            'name': 'heat',
-            'endpoints': [{'publicURL': 'http://invalid.heat.url'}]
-        }]
+        auth_data.serviceCatalog = [
+            {
+                'name': 'heat',
+                'endpoints': [{'publicURL': 'http://invalid.heat.url'}]
+            }, {
+                'name': 'quantum',
+                'endpoints': [{'publicURL': 'http://invalid.quantum.url'}]
+            }
+        ]
 
+    @mock.patch('quantumclient.v2_0.client.Client')
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
     @mock.patch('muranoconductor.config.CONF')
-    def test_create_stack(self, config_mock, ksclient_mock, heat_mock):
+    def test_create_stack(self, config_mock, ksclient_mock, heat_mock,
+                          quantum_mock):
         self._init(config_mock, ksclient_mock)
         reporter = mock.MagicMock()
         executor = HeatExecutor('stack', 'token', 'tenant_id', reporter)
@@ -88,10 +95,12 @@ class TestHeatExecutor(unittest.TestCase):
             disable_rollback=False)
         callback.assert_called_with({})
 
+    @mock.patch('quantumclient.v2_0.client.Client')
     @mock.patch('heatclient.v1.client.Client')
     @mock.patch('keystoneclient.v2_0.client.Client')
     @mock.patch('muranoconductor.config.CONF')
-    def test_update_stack(self, config_mock, ksclient_mock, heat_mock):
+    def test_update_stack(self, config_mock, ksclient_mock, heat_mock,
+                          quantum_mock):
         self._init(config_mock, ksclient_mock)
         reporter = mock.MagicMock()
         executor = HeatExecutor('stack', 'token', 'tenant_id', reporter)

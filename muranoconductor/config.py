@@ -52,6 +52,14 @@ heat_opts = [
     cfg.StrOpt('endpoint_type', default='publicURL')
 ]
 
+quantum_opts = [
+    cfg.BoolOpt('insecure', default=False),
+    cfg.StrOpt('ca_file'),
+    cfg.StrOpt('cert_file'),
+    cfg.StrOpt('key_file'),
+    cfg.StrOpt('endpoint_type', default='publicURL')
+]
+
 keystone_opts = [
     cfg.StrOpt('auth_url'),
     cfg.BoolOpt('insecure', default=False),
@@ -64,6 +72,7 @@ CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(rabbit_opts, group='rabbitmq')
 CONF.register_opts(heat_opts, group='heat')
+CONF.register_opts(quantum_opts, group='quantum')
 CONF.register_opts(keystone_opts, group='keystone')
 CONF.register_opt(cfg.StrOpt('file_server'))
 CONF.register_cli_opt(cfg.StrOpt('data_dir', default='./'))

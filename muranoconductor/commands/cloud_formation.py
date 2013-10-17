@@ -21,9 +21,10 @@ from muranoconductor.openstack.common import log as logging
 import muranoconductor.helpers
 from command import CommandBase
 import muranoconductor.config
-from heatclient.client import Client
 import heatclient.exc
 from keystoneclient.v2_0 import client as ksclient
+from heatclient import client as heat_client
+from quantumclient.v2_0 import client as quantum_client
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ class HeatExecutor(CommandBase):
 
         keystone_settings = muranoconductor.config.CONF.keystone
         heat_settings = muranoconductor.config.CONF.heat
+        quantum_settings = muranoconductor.config.CONF.quantum
 
         client = ksclient.Client(
             endpoint=keystone_settings.auth_url,
@@ -55,7 +57,15 @@ class HeatExecutor(CommandBase):
             service_type='orchestration',
             endpoint_type=heat_settings.endpoint_type)
 
-        self._heat_client = Client(
+        quantum_url = client.service_catalog.url_for(
+            service_type='network',
+            endpoint_type=quantum_settings.endpoint_type)
+
+        self._quantum_client = quantum_client.Client(
+            endpoint_url=quantum_url,
+            token=token)
+
+        self._heat_client = heat_client.Client(
             '1',
             heat_url,
             token_only=True,
@@ -82,7 +92,8 @@ class HeatExecutor(CommandBase):
     def _execute_create_update(self, template, mappings, arguments, callback):
         with open('data/templates/cf/%s.template' % template) as template_file:
             template_data = template_file.read()
-
+        if not "externalNetworkId" in mappings:
+            mappings["externalNetworkId"] = self._get_external_network_id()
         template_data = muranoconductor.helpers.transform_json(
             anyjson.loads(template_data), mappings)
 
@@ -96,6 +107,21 @@ class HeatExecutor(CommandBase):
         self._delete_pending_list.append({
             'callback': callback
         })
+
+    def _get_external_network_id(self):
+        log.info('Fetching the list of external networks...')
+        ext_nets = self._quantum_client.list_networks(
+            **{"router:external": True}).get('networks')
+        log.debug(ext_nets)
+        if ext_nets and len(ext_nets) > 0:
+            if len(ext_nets) > 1:
+                log.warning(
+                    "Multiple external networks found, will use the first one")
+            net = ext_nets[0]
+            return net.get('id')
+        else:
+            log.error("No external networks found!")
+            return None
 
     def has_pending_commands(self):
         return len(self._update_pending_list) + len(
