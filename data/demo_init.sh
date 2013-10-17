@@ -6,6 +6,6 @@ mkdir /etc/murano
 
 echo $AgentConfigBase64 | base64 -d > /etc/murano/agent.config
 
-mod 664 /etc/murano/agent.config
+chmod 664 /etc/murano/agent.config
 sleep 10
 reboot
