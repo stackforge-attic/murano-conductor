@@ -1,6 +1,6 @@
 {
     "Resources": {
-        "$instancePort": {
+        "$instanceName": {
             "Properties": {
                 "SecurityGroups" : [ {"Ref" : "MsSqlSecurityGroup"} ]
             }

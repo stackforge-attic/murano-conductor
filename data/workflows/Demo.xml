@@ -9,10 +9,12 @@
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
-		<update-cf-stack template="Demo" error="exception">
+		<update-cf-stack template="Linux" error="exception">
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+                    <mapping name="instancePort">port-<select path="state.hostname"/></mapping>
+                    <mapping name="networkName">network-<select path="/id"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data template="Demo" initFile="demo_init.sh">
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
