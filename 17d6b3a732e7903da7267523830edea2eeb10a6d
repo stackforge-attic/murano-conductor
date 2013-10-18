@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Approved+1: Serg Melikyan <smelikyan@mirantis.com>
+Code-Review+2: Serg Melikyan <smelikyan@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 18 Oct 2013 08:57:06 +0000
+Reviewed-on: https://review.openstack.org/52440
+Project: stackforge/murano-conductor
+Branch: refs/heads/release-0.3
