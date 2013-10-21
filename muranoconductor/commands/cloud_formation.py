@@ -92,8 +92,8 @@ class HeatExecutor(CommandBase):
     def _execute_create_update(self, template, mappings, arguments, callback):
         with open('data/templates/cf/%s.template' % template) as template_file:
             template_data = template_file.read()
-        if not "externalNetworkId" in mappings:
-            mappings["externalNetworkId"] = self._get_external_network_id()
+        if not 'externalNetworkId' in mappings:
+            mappings['externalNetworkId'] = self._get_external_network_id()
         template_data = muranoconductor.helpers.transform_json(
             anyjson.loads(template_data), mappings)
 
@@ -111,16 +111,16 @@ class HeatExecutor(CommandBase):
     def _get_external_network_id(self):
         log.info('Fetching the list of external networks...')
         ext_nets = self._quantum_client.list_networks(
-            **{"router:external": True}).get('networks')
+            **{'router:external': True}).get('networks')
         log.debug(ext_nets)
         if ext_nets and len(ext_nets) > 0:
             if len(ext_nets) > 1:
                 log.warning(
-                    "Multiple external networks found, will use the first one")
+                    'Multiple external networks found, will use the first one')
             net = ext_nets[0]
             return net.get('id')
         else:
-            log.error("No external networks found!")
+            log.error('No external networks found!')
             return None
 
     def has_pending_commands(self):
@@ -171,7 +171,7 @@ class HeatExecutor(CommandBase):
                     stack_name=self._stack,
                     parameters=arguments,
                     template=template,
-                    disable_rollback=False)
+                    disable_rollback=True)
 
                 log.debug('Waiting for the stack {0} to be create'.format(
                     self._stack))
@@ -253,7 +253,7 @@ class HeatExecutor(CommandBase):
                     continue
                 if not status_func(status):
                     raise EnvironmentError(
-                        "Unexpected stack state {0}".format(status))
+                        'Unexpected stack state {0}'.format(status))
 
                 try:
                     return dict([(t['output_key'], t['output_value'])
