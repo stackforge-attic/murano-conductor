@@ -60,6 +60,7 @@ class ConductorWorkflowService(service.Service):
         return MqClient(**connection_params)
 
     def _start_rabbitmq(self):
+        reconnect_delay = 1
         while True:
             try:
                 with self.create_rmq_client() as mq:
@@ -68,12 +69,16 @@ class ConductorWorkflowService(service.Service):
                     with mq.open('tasks',
                                  prefetch_count=
                                  cfg.CONF.max_environments) as subscription:
+                        reconnect_delay = 1
                         while True:
                             msg = subscription.get_message(timeout=2)
                             if msg is not None:
                                 eventlet.spawn(self._task_received, msg)
             except Exception as ex:
                 log.exception(ex)
+
+                eventlet.sleep(reconnect_delay)
+                reconnect_delay = min(reconnect_delay * 2, 60)
 
     def _task_received(self, message):
         task = message.body or {}
