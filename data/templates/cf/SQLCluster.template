@@ -2,16 +2,10 @@
     "Resources": {
         "$instancePort": {
             "Properties": {
-                "allowed_address_pairs": [
-                    {
-                        "ip_address": "$clusterIp"
-                    }
-                ],
-                "SecurityGroups": [
-                    {
-                        "Ref": "MsSqlSecurityGroup"
-                    }
-                ]
+                "allowed_address_pairs": [ {
+                    "ip_address": "$clusterIp"
+                }],
+                "security_groups": [ { "Ref": "MsSqlSecurityGroup" } ]
             }
         },
         "MsSqlSecurityGroup": {
