@@ -54,9 +54,7 @@ heat_opts = [
 
 quantum_opts = [
     cfg.BoolOpt('insecure', default=False),
-    cfg.StrOpt('ca_file'),
-    cfg.StrOpt('cert_file'),
-    cfg.StrOpt('key_file'),
+    cfg.StrOpt('ca_cert'),
     cfg.StrOpt('endpoint_type', default='publicURL')
 ]
 
