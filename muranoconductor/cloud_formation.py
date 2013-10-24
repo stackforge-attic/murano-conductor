@@ -14,14 +14,14 @@
 # limitations under the License.
 
 import base64
-import config
+from os.path import basename
 import random
 import string
 import time
 import datetime
-
 import xml_code_engine
 from openstack.common import log as logging
+from muranoconductor import config as cfg
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ log = logging.getLogger(__name__)
 def update_cf_stack(engine, context, body, template, result=None, error=None,
                     **kwargs):
     command_dispatcher = context['/commandDispatcher']
+    metadata_id = context['/metadata_id']
 
     def callback(result_value, error_result=None):
         if result is not None:
@@ -60,7 +61,8 @@ def update_cf_stack(engine, context, body, template, result=None, error=None,
         name='cf', command='CreateOrUpdate', template=template,
         mappings=(kwargs.get('mappings') or {}),
         arguments=(kwargs.get('arguments') or {}),
-        callback=callback)
+        callback=callback,
+        metadata_id=metadata_id)
 
 
 def delete_cf_stack(engine, context, body, **kwargs):
@@ -77,11 +79,12 @@ def delete_cf_stack(engine, context, body, **kwargs):
 
 def prepare_user_data(context, hostname, service, unit,
                       template='Default', initFile='init.ps1', **kwargs):
-    settings = config.CONF.rabbitmq
-
-    with open('data/{0}'.format(initFile)) as init_script_file:
-        with open('data/templates/agent-config/{0}.template'.format(
-                template)) as template_file:
+    settings = cfg.CONF.rabbitmq
+    path_to_init_file = '{0}/{1}'.format(basename(cfg.CONF.init_scripts_dir),
+                                         initFile)
+    with open(path_to_init_file) as init_script_file:
+        with open('{0}/{1}.template'.format(
+                basename(cfg.CONF.agent_config_dir), template)) as template_file:
             init_script = init_script_file.read()
             template_data = template_file.read()
 
@@ -108,7 +111,7 @@ def prepare_user_data(context, hostname, service, unit,
             init_script = init_script.replace('%INTERNAL_HOSTNAME%', hostname)
             init_script = init_script.replace(
                 '%MURANO_SERVER_ADDRESS%',
-                config.CONF.file_server or settings.host)
+                cfg.CONF.file_server or settings.host)
 
             init_script = init_script.replace(
                 '%CA_ROOT_CERT_BASE64%',
@@ -124,7 +127,7 @@ def set_config_params(template_data, replacements):
 
 
 def get_ca_certificate():
-    ca_file = (config.CONF.rabbitmq.ca_certs or '').strip()
+    ca_file = (cfg.CONF.rabbitmq.ca_certs or '').strip()
     if not ca_file:
         return ''
     with open(ca_file) as stream:

@@ -34,6 +34,12 @@ paste_deploy_opts = [
     cfg.StrOpt('config_file'),
 ]
 
+directories = [
+    cfg.StrOpt('data_dir', default='program_data'),
+    cfg.StrOpt('init_scripts_dir', default='./etc/init-scripts'),
+    cfg.StrOpt('agent_config_dir', default='./etc/agent-config'),
+]
+
 rabbit_opts = [
     cfg.StrOpt('host', default='localhost'),
     cfg.IntOpt('port', default=5672),
@@ -65,8 +71,10 @@ CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(rabbit_opts, group='rabbitmq')
 CONF.register_opts(heat_opts, group='heat')
 CONF.register_opts(keystone_opts, group='keystone')
+CONF.register_opts(directories)
 CONF.register_opt(cfg.StrOpt('file_server'))
-CONF.register_cli_opt(cfg.StrOpt('data_dir', default='./'))
+CONF.register_cli_opt(cfg.StrOpt('murano_metadata_url'))
+
 
 CONF.register_opt(cfg.IntOpt('max_environments', default=20))
 

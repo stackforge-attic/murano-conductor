@@ -15,7 +15,6 @@
 
 import glob
 import sys
-import traceback
 
 import anyjson
 import eventlet
@@ -28,7 +27,7 @@ import reporting
 from muranocommon.messaging import MqClient, Message
 from muranoconductor import config as cfg
 from muranocommon.helpers.token_sanitizer import TokenSanitizer
-
+from muranoconductor import metadata
 import vm_agent
 import cloud_formation
 
@@ -80,23 +79,29 @@ class ConductorWorkflowService(service.Service):
         message_id = message.id
         do_ack = False
         reporter = None
+
         with self.create_rmq_client() as mq:
             try:
+
                 secure_task = TokenSanitizer().sanitize(task)
                 log.info('Starting processing task {0}: {1}'.format(
                     message_id, anyjson.dumps(secure_task)))
                 reporter = reporting.Reporter(mq, message_id, task['id'])
-                config = Config()
 
+                metadata_version = metadata.get_metadata(task['id'],
+                                                         task['token'])
                 command_dispatcher = CommandDispatcher('e' + task['id'], mq,
                                                        task['token'],
                                                        task['tenant_id'],
                                                        reporter)
+
                 workflows = []
-                for path in glob.glob("data/workflows/*.xml"):
+                config = Config()
+                for path in glob.glob(
+                        '{0}/workflows/*.xml'.format(metadata_version)):
                     log.debug('Loading XML {0}'.format(path))
                     workflow = Workflow(path, task, command_dispatcher, config,
-                                        reporter)
+                                        reporter, metadata_version)
                     workflows.append(workflow)
 
                 stop = False
@@ -131,9 +136,11 @@ class ConductorWorkflowService(service.Service):
                 if stop:
                     log.info("Workflow stopped by 'stop' command")
                 do_ack = True
+                metadata.release(task['id'])
             except Exception as ex:
                 log.exception(ex)
-                log.debug("Non-processable message detected, will ack message")
+                log.debug("Non-processable message detected, "
+                          "will ack message")
                 do_ack = True
             finally:
                 if do_ack:
