@@ -1,6 +1,6 @@
 {
     "Resources": {
-        "$instancePort": {
+        "$port-{instanceName}": {
             "Properties": {
                 "allowed_address_pairs": [ {
                     "ip_address": "$clusterIp"
