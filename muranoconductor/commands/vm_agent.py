@@ -21,9 +21,11 @@ class VmAgentExecutor(CommandBase):
         self._reporter = reporter
         rmqclient.declare(self._results_queue)
 
-    def execute(self, template, mappings, unit, service, callback,
+    def execute(self, template, mappings, unit, service, callback, metadata_id,
                 timeout=None):
-        template_path = 'data/templates/agent/%s.template' % template
+        template_path = '{0}/templates/agent/{1}.template'.format(metadata_id,
+                                                                  template)
+
         #with open(template_path) as t_file:
         #    template_data = t_file.read()
         #

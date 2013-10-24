@@ -19,12 +19,13 @@ import vm_agent
 
 
 class CommandDispatcher(command.CommandBase):
-    def __init__(self, environment, rmqclient, token, tenant_id, reporter):
+    def __init__(self, environment, rmqclient, token,
+                 tenant_id, reporter):
         self._command_map = {
             'cf': cloud_formation.HeatExecutor(environment, token, tenant_id,
                                                reporter),
-            'agent': vm_agent.VmAgentExecutor(
-                environment, rmqclient, reporter)
+            'agent': vm_agent.VmAgentExecutor(environment, rmqclient,
+                                              reporter)
         }
 
     def execute(self, name, **kwargs):
