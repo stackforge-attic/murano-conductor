@@ -17,8 +17,7 @@
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
-                    <mapping name="instancePort">port-<select path="state.hostname"/></mapping>
-					<mapping name="networkName">network-<select path="/id"/></mapping>
+					<mapping name="environmentId"><select path="/id"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
@@ -54,7 +53,7 @@
 		<update-cf-stack template="IISSecurity" error="exception">
 			<parameter name="mappings">
 				<map>
-					<mapping name="instancePort">port-<select path="state.hostname"/></mapping>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
 				</map>
 			</parameter>
 			<success>
@@ -85,7 +84,7 @@
 			</parameter>
 			<success>
 				<set path="temp.registeredWithLB"><true/></set>
-				<set path="::uri">http://<select source="outputs" path="LoadBalancerIP"/>:<select path="::loadBalancerPort"/></set>
+				<set path="::uri">http://<select source="outputs"><parameter name="path"><select path="::name"/>-LoadBalancerIP</parameter></select>:<select path="::loadBalancerPort"/></set>
 			</success>
             <failure>
                <report entity="unit" level="error">

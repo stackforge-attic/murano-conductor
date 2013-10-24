@@ -15,6 +15,7 @@
 
 import deep
 import types
+import re
 
 
 def transform_json(json, mappings):
@@ -35,11 +36,25 @@ def transform_json(json, mappings):
         return result
 
     elif isinstance(json, types.StringTypes) and json.startswith('$'):
-        value = mappings.get(json[1:])
+        value = convert_macro_parameter(json[1:], mappings)
         if value is not None:
             return value
 
     return json
+
+
+def convert_macro_parameter(macro, mappings):
+    replaced = [False]
+
+    def replace(match):
+        replaced[0] = True
+        return unicode(mappings.get(match.group(1)))
+
+    result = re.sub('{(\\w+?)}', replace, macro)
+    if replaced[0]:
+        return result
+    else:
+        return mappings.get(macro)
 
 
 def merge_lists(list1, list2):

@@ -17,10 +17,10 @@
                 "ImageId": "$imageName",
                 "AvailabilityZone": "$availabilityZone",
                 "UserData": "$userData",
-                "NetworkInterfaces": [ { "Ref": "$instancePort" } ]
+                "NetworkInterfaces": [ { "Ref": "$port-{instanceName}" } ]
             }
         },
-        "$instancePort": {
+        "$port-{instanceName}": {
             "Type": "OS::Quantum::Port",
             "Properties": {
                 "network_id": {
@@ -77,7 +77,7 @@
         "network": {
             "Type": "OS::Quantum::Net",
             "Properties": {
-                "name": "$networkName"
+                "name": "$network-{environmentId}"
             }
         },
         "subnet": {
