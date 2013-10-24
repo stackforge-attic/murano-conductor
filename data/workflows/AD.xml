@@ -17,8 +17,7 @@
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
-					<mapping name="instancePort">port-<select path="state.hostname"/></mapping>
-					<mapping name="networkName">network-<select path="/id"/></mapping>
+					<mapping name="environmentId"><select path="/id"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
