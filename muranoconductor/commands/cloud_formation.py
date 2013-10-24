@@ -64,7 +64,7 @@ class HeatExecutor(CommandBase):
         self._quantum_client = quantum_client.Client(
             endpoint_url=quantum_url,
             token=token,
-            ca_certs=quantum_settings.ca_cert or None,
+            ca_cert=quantum_settings.ca_cert or None,
             insecure=quantum_settings.insecure)
 
         self._heat_client = heat_client.Client(
