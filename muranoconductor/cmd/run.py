@@ -31,12 +31,13 @@ from muranoconductor import config
 from muranoconductor.openstack.common import log
 from muranoconductor.openstack.common import service
 from muranoconductor.app import ConductorWorkflowService
+from muranoconductor import metadata
 
 
 def main():
     try:
         config.parse_args()
-        os.chdir(config.CONF.data_dir)
+        metadata.prepare(config.CONF.data_dir)
         log.setup('conductor')
         launcher = service.ServiceLauncher()
         launcher.launch_service(ConductorWorkflowService())
