@@ -13,3 +13,8 @@ oslo.config
 deep
 murano-common>=0.2.2
 PyYAML>=3.1.0
+
+
+# temporary until released
+-e git://github.com/EkaterinaFedorova/python-metadataclient.git#egg=metadataclient
+-e git://github.com/stackforge/murano-repository.git#egg=muranorepository
