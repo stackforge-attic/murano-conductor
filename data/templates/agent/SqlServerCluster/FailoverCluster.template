@@ -1,8 +1,8 @@
 {
   "Scripts": [
-    "ImportCoreFunctions.ps1",
-    "Start-PowerShellProcess.ps1",
-    "Failover-Cluster.ps1"
+    "/ImportCoreFunctions.ps1",
+    "/Start-PowerShellProcess.ps1",
+    "/Failover-Cluster.ps1"
   ],
   "Commands": [
     {

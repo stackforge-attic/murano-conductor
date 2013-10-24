@@ -1,6 +1,6 @@
 {
   "Scripts": [
-    "ImportCoreFunctions.ps1",
+    "/ImportCoreFunctions.ps1",
     "SQLServerForAOAG.ps1"
   ],
   "Commands": [

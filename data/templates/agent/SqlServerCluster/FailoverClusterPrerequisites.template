@@ -1,9 +1,9 @@
 {
   "Scripts": [
-    "ImportCoreFunctions.ps1",
-    "Update-ServiceConfig.ps1",
+    "/ImportCoreFunctions.ps1",
+    "/Update-ServiceConfig.ps1",
     "SQLServerForAOAG.ps1",
-    "Failover-Cluster.ps1"
+    "/Failover-Cluster.ps1"
   ],
   "Commands": [
     {
