@@ -47,7 +47,6 @@ class MuranoEnvironment(resource.Resource):
             except HTTPNotFound:
                 pass
 
-
     def _find_environment(self, client):
         environments = client.environments.list()
         for environment in environments:
@@ -75,10 +74,10 @@ class MuranoEnvironment(resource.Resource):
         delay = 2
         while True:
             environment = client.environments.get(environment_id)
-            if environment.status == 'pending' and i > 5*60:
+            if environment.status == 'pending' and i > 5 * 60:
                 raise EnvironmentError(
                     "Environment deployment hasn't started")
-            elif environment.status == 'deploying' and i > 65*60:
+            elif environment.status == 'deploying' and i > 65 * 60:
                 raise EnvironmentError(
                     "Environment deployment takes too long")
             elif environment.status == 'ready':

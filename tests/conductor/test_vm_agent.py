@@ -36,16 +36,23 @@ class TestVmAgent(unittest.TestCase):
                 }],
             "RebootOnCompletion": 0
         }
+        self.metadata_id = 'a8571e3b1ba6b33f6c7dbe0f81217c5070377abe'
 
         self.mfs.add_entries({
-            './data/templates/agent/test.template':
+            './a8571e3b1ba6b33f6c7dbe0f81217c5070377abe/'
+            'templates/agent/test.template':
             json.dumps(self.template),
-            './data/templates/agent/scripts/Get-DnsListeningIpAddress.ps1':
+
+            './a8571e3b1ba6b33f6c7dbe0f81217c5070377abe/'
+            'templates/agent/scripts/Get-DnsListeningIpAddress.ps1':
             'function GetDNSip(){\ntest\n}\n',
-            './data/templates/agent/scripts/Join-Domain.ps1':
+
+            './a8571e3b1ba6b33f6c7dbe0f81217c5070377abe/'
+            'templates/agent/scripts/Join-Domain.ps1':
             'function JoinDomain(){\ntest\n}\n',
         })
-        self.template_path = './data/templates/agent/test.template'
+        self.template_path = './a8571e3b1ba6b33f6c7dbe0f81217c5070377abe/' \
+                             'templates/agent/test.template'
 
     def test_script_encode(self):
         stack = mock.MagicMock()

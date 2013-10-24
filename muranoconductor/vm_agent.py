@@ -74,6 +74,7 @@ def _extract_v2_results(result_value, ok, errors):
 def send_command(engine, context, body, template, service, unit,
                  mappings=None, result=None, error=None, timeout=None,
                  osVersion=None, **kwargs):
+    metadata_id = context['/metadata_id']
     if not mappings:
         mappings = {}
     if osVersion:
@@ -112,8 +113,14 @@ def send_command(engine, context, body, template, service, unit,
                     raise UnhandledAgentException(errors)
 
     command_dispatcher.execute(
-        name='agent', template=template, mappings=mappings,
-        unit=unit, service=service, callback=callback, timeout=timeout)
+        name='agent',
+        template=template,
+        mappings=mappings,
+        unit=unit,
+        service=service,
+        callback=callback,
+        timeout=timeout,
+        metadata_id=metadata_id)
 
 
 def _get_array_item(array, index):
@@ -127,7 +134,7 @@ def _get_exception_info(data):
         'message': _get_array_item(data, 1),
         'command': _get_array_item(data, 2),
         'details': _get_array_item(data, 3),
-        'timestamp':  datetime.datetime.now().isoformat()
+        'timestamp': datetime.datetime.now().isoformat()
     }
 
 xml_code_engine.XmlCodeEngine.register_function(send_command, "send-command")
