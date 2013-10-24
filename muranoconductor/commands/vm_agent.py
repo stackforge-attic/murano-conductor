@@ -60,13 +60,30 @@ class VmAgentExecutor(CommandBase):
         else:
             return self._build_v2_execution_plan(template, path)
 
+    def _get_script_path(self, base_path, script_path):
+        if script_path.startswith('/'):
+            base_path = 'data/templates/agent/scripts'
+        else:
+            base_path = os.path.join(os.path.dirname(base_path), 'scripts')
+
+        path = os.path.join(base_path, script_path)
+
+        base_path = os.path.realpath(base_path)
+        path = os.path.realpath(path)
+        if not path.startswith(base_path, 0):
+            msg = 'Could not find script {script_path} in path {path}'.format(
+                script_path=script_path, path=base_path
+            )
+            log.warning(msg)
+            raise IOError(msg)
+
+        return path
+
     def _build_v1_execution_plan(self, template, path):
-        scripts_folder = os.path.join(
-            os.path.dirname(path), 'scripts')
         script_files = template.get('Scripts', [])
         scripts = []
         for script in script_files:
-            script_path = os.path.join(scripts_folder, script)
+            script_path = self._get_script_path(path, script)
             log.debug('Loading script "{0}"'.format(script_path))
             with open(script_path) as script_file:
                 script_data = script_file.read()
@@ -75,8 +92,6 @@ class VmAgentExecutor(CommandBase):
         return template, uuid.uuid4().hex
 
     def _build_v2_execution_plan(self, template, path):
-        scripts_folder = os.path.join(
-            os.path.dirname(path), 'scripts')
         plan_id = uuid.uuid4().hex
         template['ID'] = plan_id
         if 'Action' not in template:
@@ -91,15 +106,15 @@ class VmAgentExecutor(CommandBase):
             if 'EntryPoint' not in script:
                 raise ValueError('No entry point in script ' + name)
             script['EntryPoint'] = self._place_file(
-                scripts_folder, script['EntryPoint'], template, files)
+                path, script['EntryPoint'], template, files)
             if 'Files' in script:
                 for i in range(0, len(script['Files'])):
                     script['Files'][i] = self._place_file(
-                        scripts_folder, script['Files'][i], template, files)
+                        path, script['Files'][i], template, files)
 
         return template, plan_id
 
-    def _place_file(self, folder, name, template, files):
+    def _place_file(self, path, name, template, files):
         use_base64 = False
         if name.startswith('<') and name.endswith('>'):
             use_base64 = True
@@ -109,7 +124,7 @@ class VmAgentExecutor(CommandBase):
 
         file_id = uuid.uuid4().hex
         body_type = 'Base64' if use_base64 else 'Text'
-        with open(os.path.join(folder, name)) as stream:
+        with open(self._get_script_path(path, name)) as stream:
             body = stream.read()
         if use_base64:
             body = body.encode('base64')
