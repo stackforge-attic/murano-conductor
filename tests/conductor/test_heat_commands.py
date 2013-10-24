@@ -31,8 +31,10 @@ class TestHeatExecutor(unittest.TestCase):
                 "$key": "$value"
             }
         }
+        self.metadata_id = 'b5bbea94023083e1ee06a52af5663b15c1fb1b7c'
         self.mfs.add_entries({
-            './data/templates/cf/test.template': json.dumps(template)})
+            './{0}/templates/cf/test.template'.format(self.metadata_id):
+            json.dumps(template)})
 
     def tearDown(self):
         mockfs.restore_builtins()
@@ -66,7 +68,8 @@ class TestHeatExecutor(unittest.TestCase):
             arguments={
                 'arg1': 'arg1Value',
                 'arg2': 'arg2Value'},
-            callback=callback)
+            callback=callback,
+            metadata_id=self.metadata_id)
 
         heat_mock().stacks.get().stack_status = 'CREATE_COMPLETE'
         heat_mock().stacks.template = mock.MagicMock(
@@ -107,7 +110,8 @@ class TestHeatExecutor(unittest.TestCase):
             arguments={
                 'arg1': 'arg1Value',
                 'arg2': 'arg2Value'},
-            callback=callback)
+            callback=callback,
+            metadata_id=self.metadata_id)
 
         get_mock = heat_mock().stacks.get()
         get_mock.stack_name = 'stack'

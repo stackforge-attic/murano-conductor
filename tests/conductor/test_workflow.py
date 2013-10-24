@@ -37,6 +37,7 @@ class TestWorkflow(unittest.TestCase):
         self.mfs = mockfs.replace_builtins()
         self.model = json.loads(load_sample('objectModel1.json'))
         self.original_model = json.loads(load_sample('objectModel1.json'))
+        self.metadata_id = 'b5bbea94023083e1ee06a52af5663b15c1fb1b7c'
 
     def tearDown(self):
         mockfs.restore_builtins()
@@ -45,7 +46,8 @@ class TestWorkflow(unittest.TestCase):
         self.mfs.add_entries({'test': xml})
         stub = mock.MagicMock()
         stub.side_effect = RuntimeError
-        workflow = Workflow('test', self.model, stub, stub, stub)
+        workflow = Workflow('test', self.model, stub,
+                            stub, stub, self.metadata_id)
         workflow.execute()
 
     def test_empty_workflow_leaves_object_model_unchanged(self):
