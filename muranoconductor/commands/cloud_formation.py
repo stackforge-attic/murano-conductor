@@ -29,11 +29,12 @@ log = logging.getLogger(__name__)
 
 
 class HeatExecutor(CommandBase):
-    def __init__(self, stack, token, tenant_id, reporter):
+    def __init__(self, stack, token, tenant_id, reporter, metadata_id):
         self._update_pending_list = []
         self._delete_pending_list = []
         self._stack = stack
         self._reporter = reporter
+        self._metadata_id = metadata_id
 
         keystone_settings = muranoconductor.config.CONF.keystone
         heat_settings = muranoconductor.config.CONF.heat
@@ -77,12 +78,16 @@ class HeatExecutor(CommandBase):
                     kwargs.get('mappings') or {}),
                 muranoconductor.helpers.str2unicode(
                     kwargs.get('arguments') or {}),
-                callback)
+                callback,
+                kwargs['metadata_id'])
         elif command == 'Delete':
             return self._execute_delete(callback)
 
-    def _execute_create_update(self, template, mappings, arguments, callback):
-        with open('data/templates/cf/%s.template' % template) as template_file:
+    def _execute_create_update(self, template, mappings,
+                               arguments, callback, metadata_id):
+        template_path = '{0}/templates/cf/{1}.template'.format(metadata_id,
+                                                               template)
+        with open(template_path) as template_file:
             template_data = template_file.read()
 
         template_data = muranoconductor.helpers.transform_json(

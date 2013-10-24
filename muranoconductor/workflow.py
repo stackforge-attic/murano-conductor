@@ -28,7 +28,8 @@ object_id = id
 
 
 class Workflow(object):
-    def __init__(self, filename, data, command_dispatcher, config, reporter):
+    def __init__(self, filename, data, command_dispatcher,
+                 config, reporter, metadata_id):
         self._data = data
         self._engine = xml_code_engine.XmlCodeEngine()
         with open(filename) as xml:
@@ -40,6 +41,7 @@ class Workflow(object):
         # format: (rule-id, entity-id) => True for auto-reset bans,
         #                                 False for permanent bans
         self._blacklist = {}
+        self._metadata_id = metadata_id
 
     def execute(self):
         context = function_context.Context()
@@ -48,6 +50,7 @@ class Workflow(object):
         context['/config'] = self._config
         context['/reporter'] = self._reporter
         context['/__blacklist'] = self._blacklist
+        context['/metadata_id'] = self._metadata_id
         return self._engine.execute(context)
 
     def prepare(self):

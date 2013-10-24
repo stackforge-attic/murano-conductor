@@ -19,9 +19,11 @@ import random
 import string
 import time
 import datetime
-
 import xml_code_engine
 from openstack.common import log as logging
+from metadata import INIT_FILES_DIR_NAME as INIT_DIR
+from metadata import AGENT_CONFIG_DIR_NAME as CONFIG_DIR
+
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +31,7 @@ log = logging.getLogger(__name__)
 def update_cf_stack(engine, context, body, template, result=None, error=None,
                     **kwargs):
     command_dispatcher = context['/commandDispatcher']
+    metadata_id = context['/metadata_id']
 
     def callback(result_value, error_result=None):
         if result is not None:
@@ -60,7 +63,8 @@ def update_cf_stack(engine, context, body, template, result=None, error=None,
         name='cf', command='CreateOrUpdate', template=template,
         mappings=(kwargs.get('mappings') or {}),
         arguments=(kwargs.get('arguments') or {}),
-        callback=callback)
+        callback=callback,
+        metadata_id=metadata_id)
 
 
 def delete_cf_stack(engine, context, body, **kwargs):
@@ -78,10 +82,9 @@ def delete_cf_stack(engine, context, body, **kwargs):
 def prepare_user_data(context, hostname, service, unit,
                       template='Default', initFile='init.ps1', **kwargs):
     settings = config.CONF.rabbitmq
-
-    with open('data/{0}'.format(initFile)) as init_script_file:
-        with open('data/templates/agent-config/{0}.template'.format(
-                template)) as template_file:
+    with open('{0}/{1}'.format(INIT_DIR, initFile)) as init_script_file:
+        with open('{0}/{1}.template'.format(
+                CONFIG_DIR, template)) as template_file:
             init_script = init_script_file.read()
             template_data = template_file.read()
 
