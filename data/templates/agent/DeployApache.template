@@ -1,23 +1,21 @@
 FormatVersion: 2.0.0
 Version: 1.0.0
-Name: Deploy Telnet
+Name: Deploy Apache
 
 Parameters:
-  appName: $appName
-  
+  enablePHP: $enablePHP
 
 Body: |
-  return telnetDeploy(args.appName).stdout
+  return apacheDeploy('{0}'.format(args.enablePHP)).stdout
 
 Scripts:
-  telnetDeploy:
+  apacheDeploy:
     Type: Application
     Version: 1.0.0
-    EntryPoint: Linux/runTelnetDeploy.sh
+    EntryPoint: Linux/runApacheDeploy.sh
     Files:
       - <Linux/installer.sh>
       - <Linux/common.sh>
     Options:
       captureStdout: true
-      captureStderr: false
-
+      captureStderr: true
