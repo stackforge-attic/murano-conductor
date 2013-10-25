@@ -1,18 +1,24 @@
 <workflow>
-	<rule match="$.services[?(@.type == 'linuxTelnetService')].units[?(@.state.hostname and not @.temp.instanceName)]"
+	<!-- Provisioning rules -->
+	<rule match="$.services[?(@.type == 'linuxApacheService')].units[?(@.state.hostname and not @.temp.instanceName)]"
 		desc="Units of Linux Telnet service having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating Linux instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
+		<!-- HEAT rules defenitions -->
+		<!-- Rule #1 -->
 		<update-cf-stack template="Linux" error="exception">
 			<parameter name="mappings">
 				<map>
 					<mapping name="instanceName">
 						<select path="state.hostname"/>
 					</mapping>
-					<mapping name="environmentId">
-						<select path="/id"/>
+					<mapping name="instancePort">
+						port-<select path="state.hostname"/>
+					</mapping>
+					<mapping name="networkName">
+						network-<select path="/id"/>
 					</mapping>
 					<mapping name="userData">
 						<prepare-user-data template="Linux" initFile="linux_init.sh">
@@ -63,33 +69,31 @@
 		<stop/>
 		</failure>
 		</update-cf-stack>
-	</rule>
-	<rule match="$.services[?(@.type == 'linuxTelnetService')].units[?(@.temp.instanceName and not @.state.TelnetInstalled)]"
-		desc="Units of Linux Telnet service which have got an instance deployed but have not got telnet service installed">
+		<!-- Rule #2 -->
 		<report entity="unit">
 			<parameter name="id">
 				<select path="id"/>
 			</parameter>
 			<parameter name="text">
-				yum-ing telnet on unit <select path="state.hostname"/> (<select path="name"/>)
+				Configuring security groups on <select path="state.hostname"/> (<select path="name"/>)
 			</parameter>
 		</report>
-		<send-command template="DeployTelnet" error='exception'>
-			<parameter name="unit">
-				<select path="id"/>
-			</parameter>
-			<parameter name="service">
-				<select path="::id"/>
-			</parameter>
+		<update-cf-stack template="ApacheSecurity" error="exception">
 			<parameter name="mappings">
 				<map>
+					<mapping name="instanceName">
+						<select path="state.hostname"/>
+					</mapping>
 				</map>
 			</parameter>
 			<success>
-				<set path="state.TelnetInstalled"><true/></set>
 				<report entity="unit">
-					<parameter name="id"><select path="id"/></parameter>
-					<parameter name="text">Telnet deployed on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+					<parameter name="id">
+						<select path="id"/>
+					</parameter>
+					<parameter name="text">
+						Security groups configuration on instance <select path="state.hostname"/> (<select path="name"/>) is successful
+					</parameter>
 				</report>
 			</success>
 			<failure>
@@ -98,7 +102,58 @@
 						<select path="id"/>
 					</parameter>
 					<parameter name="text">
-						Unable to deploy Telnet on <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/>
+						Unable to configure security groups on instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/>
+					</parameter>
+				</report>
+				<stop/>
+			</failure>
+		</update-cf-stack>
+	</rule>
+	<!-- Agent rules -->
+	<rule match="$.services[?(@.type == 'linuxApacheService')].units[?(@.temp.instanceName and not @.state.ApacheInstalled)]"
+			desc="Units of Linux Apache service which have got an instance deployed but have not got Apache service installed">
+		<report entity="unit">
+			<parameter name="id">
+				<select path="id"/>
+			</parameter>
+			<parameter name="text">
+				insatalling Apache on unit <select path="state.hostname"/> (<select path="name"/>)
+			</parameter>
+		</report>
+		<!-- Commands sequence -->
+		<!-- Command #1-->
+		<send-command template="DeployApache" error='exception'>
+			<parameter name="unit">
+				<select path="id"/>
+			</parameter>
+			<parameter name="service">
+				<select path="::id"/>
+			</parameter>
+			<parameter name="mappings">
+				<map>
+					<mapping name="enablePHP">
+						<select path="::deployApachePHP"/>
+					</mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="state.ApacheInstalled"><true/></set>
+				<report entity="unit">
+					<parameter name="id">
+						<select path="id"/>
+					</parameter>
+					<parameter name="text">
+						Apache deployed on <select path="state.hostname"/> (<select path="name"/>)
+					</parameter>
+				</report>
+			</success>
+			<failure>
+				<report entity="unit" level="error">
+					<parameter name="id">
+						<select path="id"/>
+					</parameter>
+					<parameter name="text">
+						Unable to deploy Apache on <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/>
 					</parameter>
 				</report>
 				<stop/>
