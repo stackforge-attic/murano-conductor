@@ -1,6 +1,6 @@
 {
     "Resources": {
-        "$instancePort": {
+        "$port-{instanceName}": {
             "Properties": {
                 "security_groups" : [ {"Ref" : "ApacheSecurityGroup"} ]
             }
@@ -8,7 +8,7 @@
         "ApacheSecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "SecurityGroupIngress": [                    
+                "SecurityGroupIngress": [
                     {
                         "ToPort": "80",
                         "IpProtocol": "tcp",

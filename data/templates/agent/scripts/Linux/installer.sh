@@ -7,9 +7,9 @@ PMGR_LIST_OPTS=""
 
 function include(){
     curr_dir=$(cd $(dirname "$0") && pwd)
-    inc_file_Path=$curr_dir/$1
-    if [ -f "$inc_file_Path" ]; then
-        . $inc_file_Path
+    inc_file_path=$curr_dir/$1
+    if [ -f "$inc_file_path" ]; then
+        . $inc_file_path
     else
         exit 1
     fi

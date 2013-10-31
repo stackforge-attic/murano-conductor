@@ -4,7 +4,9 @@
 		desc="Units of Linux Telnet service having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
-			<parameter name="text">Creating Linux instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
+			<parameter name="text">
+				Creating Linux instance <select path="state.hostname"/> (<select path="name"/>)
+			</parameter>
 		</report>
 		<!-- HEAT rules defenitions -->
 		<!-- Rule #1 -->
@@ -131,7 +133,7 @@
 			</parameter>
 			<parameter name="mappings">
 				<map>
-					<mapping name="enablePHP">
+					<mapping name="deployApachePHP">
 						<select path="::deployApachePHP"/>
 					</mapping>
 				</map>
