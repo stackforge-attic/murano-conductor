@@ -59,7 +59,23 @@ Configure
 
     # Directory where conductor's data directory located.
     # "data" must be subdirectory to this.
-    data_dir = /etc/murano-conductor
+    data_dir = /etc/murano-conductor/metadata-cache
+
+    # Provide url to Murano Metadata repository
+    murano_metadata_url = http://localhost:8084
+
+    # Maximum number of environments that can be processed simultaneously
+    max_environments = 20
+
+    # Maximum number of VMs per environment
+    max_hosts = 250
+
+    # Template IP address for generating environment subnet cidrs
+    env_ip_template = 10.0.0.0
+
+    # Enforces flat network topology by default.
+    # If set to "False", routed topology will be used
+    flat_by_default = False
 
     [keystone]
     # URL of OpenStack KeyStone service REST API.
@@ -85,6 +101,14 @@ Configure
     # Optional PEM-formatted file that contains the private key
     key_file =
     # If set then the server's certificate will not be verified
+    insecure = False
+    # Valid endpoint types: publicURL (default), internalURL, adminURL
+    endpoint_type = publicURL
+
+    [neutron]
+    # Optional CA cert file to use in SSL connections
+    #ca_cert =
+    # Allow self signed server certificate
     insecure = False
     # Valid endpoint types: publicURL (default), internalURL, adminURL
     endpoint_type = publicURL
