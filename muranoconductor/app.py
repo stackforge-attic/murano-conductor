@@ -30,6 +30,7 @@ from muranocommon.helpers.token_sanitizer import TokenSanitizer
 from muranoconductor import metadata
 import vm_agent
 import cloud_formation
+import network
 
 log = logging.getLogger(__name__)
 
