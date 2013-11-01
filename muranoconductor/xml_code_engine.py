@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import uuid
 
 import xml.etree.ElementTree as etree
 import types
@@ -127,6 +128,10 @@ def _false_func(**kwargs):
     return False
 
 
+def _gen_id(**kwargs):
+    return uuid.uuid4().hex
+
+
 XmlCodeEngine.register_function(_dict_func, "map")
 XmlCodeEngine.register_function(_array_func, "list")
 XmlCodeEngine.register_function(_text_func, "text")
@@ -135,3 +140,4 @@ XmlCodeEngine.register_function(_function_func, "function")
 XmlCodeEngine.register_function(_null_func, "null")
 XmlCodeEngine.register_function(_true_func, "true")
 XmlCodeEngine.register_function(_false_func, "false")
+XmlCodeEngine.register_function(_gen_id, "uuid")
