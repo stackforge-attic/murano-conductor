@@ -58,6 +58,12 @@ heat_opts = [
     cfg.StrOpt('endpoint_type', default='publicURL')
 ]
 
+neutron_opts = [
+    cfg.BoolOpt('insecure', default=False),
+    cfg.StrOpt('ca_cert'),
+    cfg.StrOpt('endpoint_type', default='publicURL')
+]
+
 keystone_opts = [
     cfg.StrOpt('auth_url'),
     cfg.BoolOpt('insecure', default=False),
@@ -70,6 +76,7 @@ CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
 CONF.register_opts(rabbit_opts, group='rabbitmq')
 CONF.register_opts(heat_opts, group='heat')
+CONF.register_opts(neutron_opts, group='neutron')
 CONF.register_opts(keystone_opts, group='keystone')
 CONF.register_opts(directories)
 CONF.register_opt(cfg.StrOpt('file_server'))
@@ -77,6 +84,9 @@ CONF.register_cli_opt(cfg.StrOpt('murano_metadata_url'))
 
 
 CONF.register_opt(cfg.IntOpt('max_environments', default=20))
+CONF.register_opt(cfg.IntOpt('max_hosts', default=250))
+CONF.register_opt(cfg.StrOpt('env_ip_template', default='10.0.0.0'))
+CONF.register_opt(cfg.BoolOpt('flat_by_default', default=False))
 
 
 CONF.import_opt('verbose', 'muranoconductor.openstack.common.log')

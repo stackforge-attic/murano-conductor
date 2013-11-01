@@ -7,4 +7,5 @@ nosexcover
 pep8
 sphinx>=1.1.2
 mockfs
+python-neutronclient>=2.3.1
 
