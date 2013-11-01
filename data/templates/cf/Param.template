@@ -1,0 +1,8 @@
+{
+  "Parameters" : {
+    "$paramName" : {
+      "Type" : "String",
+      "Default" : "$paramValue"
+    }
+  }
+}

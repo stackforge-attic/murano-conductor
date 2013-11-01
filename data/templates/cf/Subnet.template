@@ -1,0 +1,20 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Resources": {
+        "$subnetName": {
+            "Type": "OS::Neutron::Subnet",
+            "Properties": {
+                "network_id": {
+                    "Ref": "$networkRef"
+                },
+                "ip_version": 4,
+                "dns_nameservers": ["8.8.8.8"],
+                "cidr": "$cidr"
+            }
+        }
+    },
+
+    "Outputs": {
+    }
+}

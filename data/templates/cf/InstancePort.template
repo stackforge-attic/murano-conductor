@@ -1,0 +1,29 @@
+{
+   "Resources": {
+        "$instanceName": {
+            "Properties": {
+                "NetworkInterfaces": [
+                    {
+                        "Ref": "$instancePort"
+                    }
+                ]
+            }
+        },
+        "$instancePort": {
+            "Type": "OS::Neutron::Port",
+            "Properties": {
+                "security_groups": [
+                    {
+                        "Ref": "MuranoDefaultSecurityGroup"
+                    }
+                ],
+                "network_id": {
+                    "Ref": "$network"
+                }
+            }
+        }
+    },
+
+    "Outputs": {
+    }
+}

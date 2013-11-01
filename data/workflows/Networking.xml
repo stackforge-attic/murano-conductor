@@ -1,0 +1,238 @@
+<workflow>
+
+    <rule match="$[?(not @.networking.topology)]"
+          desc="Network topology unknown">
+        <set path="networking.topology"><get-net-topology/></set>
+    </rule>
+
+    <rule match="$[?(@.networking.topology == 'routed' and not @.networking.routerId)]"
+          desc="Router-based topology, need to detect router">
+       <get-default-router-id result="result">
+           <success>
+               <set path="networking.routerId"><select source="result" path="routerId"/></set>
+               <set path="networking.state.ready_for_cidrs"><true/></set>
+               <set path="networking.createNetwork"><true/></set>
+           </success>
+       </get-default-router-id>
+    </rule>
+
+    <rule match="$[?(@.networking.topology == 'flat' and not @.networking.networks)]"
+          desc="Flat-network topology, need to detect external network">
+        <get-default-network-id result="result">
+            <success>
+                <set path="networking.networks">
+                    <list>
+                        <map>
+                            <mapping name="id"><uuid/></mapping>
+                            <mapping name="networkId"><select source="result" path="networkId"/></mapping>
+                            <mapping name="createSubnet"><false/></mapping>
+                        </map>
+                    </list>
+                </set>
+                <set path="networking.createNetwork"><true/></set>
+                <set path="networking.state.ready_for_cidrs"><true/></set>
+            </success>
+        </get-default-network-id>
+    </rule>
+
+
+    <rule match="$[?(@.networking.topology == 'manual' and not @.networking.state.ready_for_cidrs)]"
+          desc="No topology queries required, ready to query cidrs">
+        <set path="networking.state.ready_for_cidrs"><true/></set>
+    </rule>
+
+
+    <rule match="$[?(@.networking.createNetwork and not @.networking.cidr and @.networking.state.ready_for_cidrs)]"
+            desc="Need to find cidr for network-to-be-generated">
+        <get-cidr result="cidr">
+            <parameter name="routerId"><select path="/networking.routerId"/></parameter>
+            <success>
+                <set path="networking.cidr"><select source="cidr" path="cidr"/></set>
+            </success>
+        </get-cidr>
+    </rule>
+
+    <rule match="$[?(@.networking.state.ready_for_cidrs)].networking.networks[?(@.createSubnet and not @.cidr)]"
+            desc="Need to find cidr for network-to-join">
+        <get-cidr result="cidr">
+            <parameter name="routerId"><select path="/networking.routerId"/></parameter>
+            <success>
+                <set path="cidr"><select source="cidr" path="cidr"/></set>
+            </success>
+        </get-cidr>
+    </rule>
+
+    <rule match="$[?(@.networking.state.ready_for_cidrs)]">
+        <rule match="$[?(@.networking.createNetwork and not @.networking.cidr)]"
+                desc="No more cidr config required for new networks">
+            <empty>
+                  <set path="networking.state.new_net_cidr_done"><true/></set>
+                  <mute/>
+            </empty>
+        </rule>
+    </rule>
+
+    <rule match="$[?(@.networking.state.ready_for_cidrs)]">
+        <rule match="$.networking.networks[?(@.createSubnet and not @.cidr)]"
+                desc="No more cidr config required for joined networks">
+            <empty>
+                <set path="networking.state.join_net_cidr_done"><true/></set>
+                <mute/>
+            </empty>
+        </rule>
+    </rule>
+
+    <rule match="$[?(@.networking.state.new_net_cidr_done and @.networking.state.join_net_cidr_done)]">
+        <set path="networking.state.ready_for_cf"><true/></set>
+        <mute/>
+    </rule>
+
+
+    <rule match="$[?(@.networking.createNetwork and not @.temp.networkCreated and @.networking.state.ready_for_cf)]"
+            desc="Requested to Create a Network">
+        <update-cf-stack template="Network">
+			<parameter name="mappings">
+				<map>
+					<mapping name="networkName">network-<select path="/id"/></mapping>
+				</map>
+			</parameter>
+			<success>
+				<set path="temp.networkCreated"><true/></set>
+			</success>
+		</update-cf-stack>
+        <update-cf-stack template="Subnet">
+            <parameter name="mappings">
+                <map>
+                    <mapping name="subnetName">subnet</mapping>
+                    <mapping name="networkRef">network</mapping>
+                    <mapping name="cidr"><select path="/networking.cidr"/> </mapping>
+                </map>
+            </parameter>
+            <success>
+				<set path="temp.subnetCreated"><true/></set>
+			</success>
+        </update-cf-stack>
+    </rule>
+
+
+    <rule match="$[?(@.networking.state.ready_for_cf)].networking.networks[?(not @.temp.networkJoined)]"
+          desc="External Network for joining exists">
+        <update-cf-stack template="Param">
+            <parameter name="mappings">
+                <map>
+                    <mapping name="paramName">network-<select path="id"/></mapping>
+                    <mapping name="paramValue"><select path="networkId"/></mapping>
+                </map>
+            </parameter>
+            <success>
+				<set path="temp.networkJoined"><true/></set>
+			</success>
+        </update-cf-stack>
+    </rule>
+
+
+
+    <rule match="$[?(@.networking.state.ready_for_cf)].networking.networks[?(@.createSubnet and not @.temp.subnetCreated)]"
+          desc="Need to create a subnet in the joined network">
+        <update-cf-stack template="Subnet">
+            <parameter name="mappings">
+                <map>
+                    <mapping name="subnetName">subnet-<select path="id"/></mapping>
+                    <mapping name="networkRef">network-<select path="id"/></mapping>
+                    <mapping name="cidr"><select path="cidr"/></mapping>
+                </map>
+            </parameter>
+            <success>
+                <set path="temp.subnetCreated"><true/></set>
+            </success>
+        </update-cf-stack>
+    </rule>
+
+
+    <rule match="$[?(not @.networking.state.subnetRouterId and @.networking.routerId and @.networking.createNetwork and @.networking.state.ready_for_cf)]"
+          desc="Need to connect subnet of new network to router">
+          <update-cf-stack template="RouterInterface" result="outputs" error="exception">
+			<parameter name="mappings">
+				<map>
+					<mapping name="routerId"><select path="/networking.routerId"/></mapping>
+					<mapping name="interfaceName"><select path="id"/></mapping>
+					<mapping name="subnet">subnet</mapping>
+				</map>
+			</parameter>
+            <success>
+				<set path="networking.state.subnetRouterId"><select path="/networking.routerId"/> </set>
+                <mute/>
+			</success>
+		</update-cf-stack>
+    </rule>
+
+    <rule match="$[?(@.networking.routerId and @.networking.state.ready_for_cf)].networking.networks[?(@.createSubnet and not @.state.subnetRouterId)]"
+          desc="Need to connect newly-created subnet of a new network to a router">
+         <update-cf-stack template="RouterInterface">
+			<parameter name="mappings">
+				<map>
+					<mapping name="routerId"><select path="/networking.routerId"/></mapping>
+					<mapping name="interfaceName">new</mapping>
+					<mapping name="subnet">subnet-<select path="id"/></mapping>
+				</map>
+			</parameter>
+            <success>
+				<set path="state.subnetRouterId"><select path="/networking.routerId"/> </set>
+                <mute/>
+			</success>
+		</update-cf-stack>
+    </rule>
+
+    <rule match="$[?(@.networking.createNetwork and @.networking.state.ready_for_cf)]">
+        <rule match="$.services[*].units[?(@.state.hostname and not @.temp.instanceName)]"
+            desc="Units to be created requiring ports in new network">
+            <update-cf-stack template="InstancePortWSubnet">
+                <parameter name="mappings">
+                    <map>
+                        <mapping name="instanceName"><select path="state.hostname"/></mapping>
+                        <mapping name="instancePort">port-<select path="state.hostname"/></mapping>
+                        <mapping name="network">network</mapping>
+                        <mapping name="subnet">subnet</mapping>
+                    </map>
+                </parameter>
+            </update-cf-stack>
+        </rule>
+    </rule>
+
+    <rule match="$[?(@.networking.state.ready_for_cf)].networking.networks[?(@.createSubnet)]">
+       <set path="#network">
+			<select/>
+		</set>
+        <rule desc="Units to be created requiring ports in joined network with subnet">
+            <parameter name="match">/$.services[*].units[?(@.state.hostname and not @.temp.instanceName)]</parameter>
+            <update-cf-stack template="InstancePortWSubnet">
+                <parameter name="mappings">
+                    <map>
+                        <mapping name="instanceName"><select path="state.hostname"/></mapping>
+                        <mapping name="instancePort">network-port-<select path="state.hostname"/></mapping>
+                        <mapping name="network">network-<select source="network" path="id"/> </mapping>
+                        <mapping name="subnet">network-<select source="network" path="id"/></mapping>
+                    </map>
+                </parameter>
+            </update-cf-stack>
+        </rule>
+    </rule>
+
+    <rule match="$[?(@.networking.state.ready_for_cf)].networking.networks[?(not @.createSubnet)]">
+       <set path="#network">
+			<select/>
+		</set>
+        <rule desc="Units to be created requiring ports in joined network without subnet">
+            <parameter name="match">/$.services[*].units[?(@.state.hostname and not @.temp.instanceName)]</parameter>
+            <update-cf-stack template="InstancePort">
+                <parameter name="mappings">
+                    <map>
+                        <mapping name="instanceName"><select path="state.hostname"/></mapping>
+                        <mapping name="instancePort">join-<select source="network" path="id"/>-port-<select path="state.hostname"/></mapping>
+                        <mapping name="network">network-<select source="network" path="id"/> </mapping>
+                    </map>
+                </parameter>
+            </update-cf-stack>
+        </rule>
+    </rule>
+</workflow>

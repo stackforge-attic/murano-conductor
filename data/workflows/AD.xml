@@ -7,7 +7,7 @@
         <mute/>
 	</rule>
 
-	<rule match="$.services[?(@.type == 'activeDirectory' and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
+	<rule match="$[?(@.networking.state.ready_for_cf)].services[?(@.type == 'activeDirectory' and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
             desc="Units of AD services which have got hostname and image assigned, but instances not deployed yet">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>

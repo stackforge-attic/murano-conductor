@@ -7,7 +7,7 @@
         <mute/>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm') and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
+	<rule match="$[?(@.networking.state.ready_for_cf)].services[?(@.type in ('webServer', 'aspNetApp', 'webServerFarm', 'aspNetAppFarm') and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
           desc="Units of web services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
@@ -18,7 +18,6 @@
 				<map>
 					<mapping name="instanceName"><select path="state.hostname"/></mapping>
                     <mapping name="instancePort">port-<select path="state.hostname"/></mapping>
-					<mapping name="networkName">network-<select path="/id"/></mapping>
 					<mapping name="userData">
 						<prepare-user-data>
 							<parameter name="hostname"><select path="state.hostname"/></parameter>
@@ -48,7 +47,7 @@
 		</update-cf-stack>
 	</rule>
 
-	<rule match="$.services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.temp.registeredWithLB)]"
+	<rule match="$[?(@.networking.state.ready_for_cf)].services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.temp.registeredWithLB)]"
           desc="Units of web-farms services which have a hostname assigned but are not registered with LB">
 		<update-cf-stack template="LoadBalancer" result="outputs" error="exception">
 			<parameter name="mappings">

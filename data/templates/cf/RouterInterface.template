@@ -1,0 +1,18 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Resources": {
+        "$interfaceName": {
+            "Type": "OS::Neutron::RouterInterface",
+            "Properties": {
+                "router_id": "$routerId",
+                "subnet_id": {
+                    "Ref": "$subnet"
+                }
+            }
+        }
+    },
+
+    "Outputs": {
+    }
+}
