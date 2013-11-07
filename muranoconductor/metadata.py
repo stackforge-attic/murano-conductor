@@ -44,8 +44,11 @@ def _unpack_data_archive(task_id, hash):
     dst_dir = task_id
     if not os.path.exists(dst_dir):
         os.mkdir(dst_dir)
-    with tarfile.open(archive_name, 'r:gz') as tar:
+    tar = tarfile.open(archive_name, 'r:gz')
+    try:
         tar.extractall(path=dst_dir)
+    finally:
+        tar.close()
     return dst_dir
 
 
