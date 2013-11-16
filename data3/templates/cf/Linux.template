@@ -51,13 +51,13 @@
                         "IpProtocol": "tcp",
                         "FromPort" : "1",
                         "ToPort": "65535",
-                        "CidrIp": "10.0.0.0/24"
+                        "CidrIp": "0.0.0.0/24"
                     },
                     {
                         "IpProtocol": "udp",
                         "FromPort" : "1",
                         "ToPort": "65535",
-                        "CidrIp": "10.0.0.0/24"
+                        "CidrIp": "0.0.0.0/24"
                     }
                 ],
                 "GroupDescription": "Default security group for Linux Murano Environments"
