@@ -45,6 +45,30 @@
                 <stop/>
             </failure>
 		</update-cf-stack>
+		<report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Opening SQL ports on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+		</report>
+		<update-cf-stack template="SQLSecurity" error="exception">
+			<parameter name="mappings">
+				<map>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+				</map>
+			</parameter>
+			<success>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">SQL ports open on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+				</report>
+			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to open SQL ports on instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
+				</report>
+                <stop/>
+            </failure>
+		</update-cf-stack>
 	</rule>
 
 	<rule match="$.services[?(@.type == 'msSqlClusterServer' and @.domain and not @.domainAdminUserName and not @.domainAdminPassword)]"
