@@ -14,7 +14,7 @@
          }
      },
      "Outputs": {
-        "LoadBalancerIP": {
+        "$loadBalancerIpPropertyName": {
             "Value": { "Fn::GetAtt": [ "$lbName", "DNSName" ] },
             "Description": ""
         }
