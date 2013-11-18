@@ -1,14 +1,14 @@
 <workflow>
 	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp') and @.domain)].units[*]"
-          desc='Units of web services with domain'>
+		  desc='Units of web services with domain'>
 		<set path="domain">
 			<select path="::domain"/>
 		</set>
-        <mute/>
+		<mute/>
 	</rule>
 
 	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp') and @.osImage.name)].units[?(@.state.hostname and not @.temp.instanceName)]"
-          desc="Units of web services having hostname and image names assigned but without instances">
+		  desc="Units of web services having hostname and image names assigned but without instances">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating instance <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -37,16 +37,16 @@
 					<parameter name="text">Instance <select path="state.hostname"/> (<select path="name"/>) created</parameter>
 				</report>
 			</success>
-            <failure>
-                <report entity="unit" level="error">
+			<failure>
+				<report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to deploy instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
-                <stop/>
-            </failure>
+				<stop/>
+			</failure>
 		</update-cf-stack>
 
-        <report entity="unit">
+		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Configuring security groups on <select path="state.hostname"/> (<select path="name"/>)</parameter>
 		</report>
@@ -62,18 +62,18 @@
 					<parameter name="text">Security groups configuration on instance <select path="state.hostname"/> (<select path="name"/>) is successful</parameter>
 				</report>
 			</success>
-            <failure>
-                <report entity="unit" level="error">
+			<failure>
+				<report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to configure security groups on instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
 				</report>
-                <stop/>
-            </failure>
+				<stop/>
+			</failure>
 		</update-cf-stack>
 	</rule>
 
 	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp') and @.adminPassword and @.adminPassword != @.state.adminPassword)].units[?(@.temp.instanceName)]"
-            desc="Units of web services which have got an instance deployed but has not got a correct admin password ">
+			desc="Units of web services which have got an instance deployed but has not got a correct admin password ">
 		<send-command template="SetPassword" error='exception'>
 			<parameter name="unit">
 				<select path="id"/>
@@ -93,19 +93,19 @@
 					<select path="::adminPassword"/>
 				</set>
 			</success>
-            <failure>
-                <report entity="unit" level="warning">
+			<failure>
+				<report entity="unit" level="warning">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to set admin password on unit <select path="state.hostname"/> (<select path="name"/>) <format-error error="exception"/></parameter>
 				</report>
-                <mute/>
-            </failure>
+				<mute/>
+			</failure>
 		</send-command>
 	</rule>
 
 
 	<rule match="$.services[?(@.type in ('webServer', 'aspNetApp'))].units[?(@.temp.instanceName and not @.state.iisInstalled)]"
-            desc="Units of web services which have got an instance deployed but have not got an IIS installed">
+			desc="Units of web services which have got an instance deployed but have not got an IIS installed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Creating IIS Web Server on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -124,18 +124,18 @@
 					<parameter name="text">IIS <select path="state.hostname"/> (<select path="name"/>) has started</parameter>
 				</report>
 			</success>
-            <failure>
-                <report entity="unit" level="error">
+			<failure>
+				<report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to install IIS on <select path="state.hostname"/> (<select path="name"/>) <format-error error="exception"/></parameter>
 				</report>
-                <stop/>
-            </failure>
+				<stop/>
+			</failure>
 		</send-command>
 	</rule>
 
 	<rule match="$.services[?(@.type in ('aspNetApp', 'aspNetAppFarm'))].units[?(@.state.iisInstalled and not @.state.webAppDeployed)]"
-            desc="Units of ASP.NET app services which have got IIS installed but not the WebApplication deployed">
+			desc="Units of ASP.NET app services which have got IIS installed but not the WebApplication deployed">
 		<report entity="unit">
 			<parameter name="id"><select path="id"/></parameter>
 			<parameter name="text">Deploying WebApp <select path="::name"/> on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
@@ -147,7 +147,7 @@
 			<parameter name="service">
 				<select path="::id"/>
 			</parameter>
-            <parameter name="mappings">
+			<parameter name="mappings">
 				<map>
 					<mapping name="repository">
 						<select path="::repository"/>
@@ -161,13 +161,13 @@
 					<parameter name="text">WebApp <select path="::name"/> has been deployed on unit <select path="state.hostname"/> (<select path="name"/>)</parameter>
 				</report>
 			</success>
-            <failure>
-                <report entity="unit" level="error">
+			<failure>
+				<report entity="unit" level="error">
 					<parameter name="id"><select path="id"/></parameter>
 					<parameter name="text">Unable to deploy WebApp on <select path="state.hostname"/> (<select path="name"/>) <format-error error="exception"/></parameter>
 				</report>
-                <stop/>
-            </failure>
+				<stop/>
+			</failure>
 		</send-command>
 	</rule>
 

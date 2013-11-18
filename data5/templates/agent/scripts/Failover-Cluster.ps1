@@ -57,16 +57,16 @@ function Install-FailoverClusterPrerequisites {
 
 
 function New-FailoverClusterSharedFolder {
-	param (
+    param (
         [String] $ClusterName,
         [String] $DomainName,
         [String] $ShareServer,
-		[String] $SharePath = $($Env:SystemDrive + '\FCShare'),
-		[String] $ShareName = 'FCShare',
+        [String] $SharePath = $($Env:SystemDrive + '\FCShare'),
+        [String] $ShareName = 'FCShare',
         [String] $UserName,
         [String] $UserPassword,
         $Credential = $null
-	)
+    )
     begin {
         Show-InvocationInfo $MyInvocation
     }
@@ -81,7 +81,7 @@ function New-FailoverClusterSharedFolder {
         Write-Log "--> New-FailoverClusterSharedFolder"
 
         Write-Log "Creating shared folder for Failover Cluster ..."
-        
+
         if ($Credential -eq $null) {
             $Credential = New-Credential -UserName "$DomainName\$UserName" -Password "$UserPassword"
         }
@@ -104,7 +104,7 @@ function New-FailoverClusterSharedFolder {
                 Remove-Item -Path $SharePath -Force -ErrorAction 'SilentlyContinue'
 
                 New-Item -Path $SharePath -ItemType Container -Force
-                
+
                 New-SmbShare -Path $SharePath `
                     -Name $ShareName `
                     -FullAccess "$ClusterAccount", 'Everyone' `
@@ -123,7 +123,7 @@ function New-FailoverClusterSharedFolder {
 
 
 function New-FailoverCluster {
-	param (
+    param (
         [String] $ClusterName,
         [String] $StaticAddress,
         [String[]] $ClusterNodes,
@@ -161,9 +161,9 @@ function New-FailoverCluster {
 
         Import-Module FailoverClusters
 
-    	if ((Get-Cluster $ClusterName -ErrorAction SilentlyContinue) -eq $null) {
+        if ((Get-Cluster $ClusterName -ErrorAction SilentlyContinue) -eq $null) {
             Write-Log "Creating new cluster '$ClusterName' ..."
-<#            
+<#
             Start-PowerShellProcess -Command @"
 Import-Module FailoverClusters
 New-Cluster -Name '$ClusterName' -StaticAddress '$StaticAddress'
