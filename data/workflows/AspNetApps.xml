@@ -44,6 +44,31 @@
                 <stop/>
             </failure>
 		</update-cf-stack>
+
+		<report entity="unit">
+			<parameter name="id"><select path="id"/></parameter>
+			<parameter name="text">Configuring security groups on <select path="state.hostname"/> (<select path="name"/>)</parameter>
+		</report>
+		<update-cf-stack template="IISSecurity" error="exception">
+			<parameter name="mappings">
+				<map>
+					<mapping name="instanceName"><select path="state.hostname"/></mapping>
+				</map>
+			</parameter>
+			<success>
+				<report entity="unit">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Security groups configuration on instance <select path="state.hostname"/> (<select path="name"/>) is successful</parameter>
+				</report>
+			</success>
+            <failure>
+                <report entity="unit" level="error">
+					<parameter name="id"><select path="id"/></parameter>
+					<parameter name="text">Unable to configure security groups on instance <select path="state.hostname"/> (<select path="name"/>) due to <format-error error="exception"/></parameter>
+				</report>
+                <stop/>
+            </failure>
+		</update-cf-stack>
 	</rule>
 
 	<rule match="$.services[?(@.type in ('webServerFarm', 'aspNetAppFarm'))].units[?(@.state.hostname and not @.temp.registeredWithLB)]"
