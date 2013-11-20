@@ -137,7 +137,7 @@ function add_fw_rule(){
         *)
             _fw_cmd=$(which iptables)
             _fw_rule=$_rule_string
-            _fw_enable_rules="service $_fw_cmd save"
+            _fw_enable_rules="service $(basename $_fw_cmd) save"
             ;;
     esac
     iptcmdsave=$(which iptables-save)
