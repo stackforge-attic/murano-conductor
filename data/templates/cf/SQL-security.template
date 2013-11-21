@@ -1,8 +1,12 @@
 {
     "Resources": {
-        "$port-{instanceName}": {
+        "$instanceName": {
             "Properties": {
-                "security_groups" : [ {"Ref" : "MsSqlSecurityGroup"} ]
+                "SecurityGroups": [
+                    {
+                        "Ref": "MsSqlSecurityGroup"
+                    }
+                ]
             }
         },
         "MsSqlSecurityGroup": {

@@ -1,11 +1,12 @@
 {
     "Resources": {
-        "$port-{instanceName}": {
+        "$instanceName": {
             "Properties": {
-                "allowed_address_pairs": [ {
-                    "ip_address": "$clusterIp"
-                }],
-                "security_groups": [ { "Ref": "MsSqlSecurityGroup" } ]
+                "SecurityGroups": [
+                    {
+                        "Ref": "MsSqlSecurityGroup"
+                    }
+                ]
             }
         },
         "MsSqlSecurityGroup": {
@@ -34,13 +35,13 @@
                         "FromPort": "445",
                         "ToPort": "445",
                         "IpProtocol": "tcp",
-                        "CidrIp": "10.0.0.0/24"
+                        "CidrIp": "0.0.0.0/0"
                     },
                     {
                         "FromPort": "1024",
                         "ToPort": "65535",
                         "IpProtocol": "tcp",
-                        "CidrIp": "10.0.0.0/24"
+                        "CidrIp": "0.0.0.0/0"
                     }
                 ],
                 "GroupDescription": "Enable MS SQL access"

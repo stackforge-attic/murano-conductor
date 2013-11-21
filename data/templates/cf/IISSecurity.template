@@ -1,8 +1,12 @@
 {
     "Resources": {
-        "$port-{instanceName}": {
+        "$instanceName": {
             "Properties": {
-                "security_groups" : [ {"Ref" : "IISSecurityGroup"} ]
+                "SecurityGroups": [
+                    {
+                        "Ref": "IISSecurityGroup"
+                    }
+                ]
             }
         },
         "IISSecurityGroup": {
