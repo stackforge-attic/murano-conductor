@@ -40,6 +40,12 @@
                         "IpProtocol": "icmp",
                         "FromPort": "-1",
                         "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "FromPort": "5985",
+                        "ToPort": "5986",
+                        "IpProtocol": "tcp",
+                        "CidrIp": "0.0.0.0/0"
                     }
                 ],
                 "GroupDescription": "Default security group for Windows Murano Environments"
