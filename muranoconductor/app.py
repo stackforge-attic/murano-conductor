@@ -63,8 +63,8 @@ class ConductorWorkflowService(service.Service):
         while True:
             try:
                 with self.create_rmq_client() as mq:
-                    mq.declare('tasks', 'tasks')
-                    mq.declare('task-results')
+                    mq.declare('tasks', 'tasks', enable_ha=True)
+                    mq.declare('task-results', enable_ha=True)
                     with mq.open('tasks',
                                  prefetch_count=
                                  cfg.CONF.max_environments) as subscription:

@@ -19,7 +19,7 @@ class VmAgentExecutor(CommandBase):
         self._pending_list = []
         self._results_queue = '-execution-results-%s' % str(stack).lower()
         self._reporter = reporter
-        rmqclient.declare(self._results_queue)
+        rmqclient.declare(self._results_queue, enable_ha=True, ttl=86400000)
 
     def execute(self, template, mappings, unit, service, callback, metadata_id,
                 timeout=None):
@@ -46,7 +46,7 @@ class VmAgentExecutor(CommandBase):
         msg = Message()
         msg.body = template
         msg.id = msg_id
-        self._rmqclient.declare(queue)
+        self._rmqclient.declare(queue, enable_ha=True, ttl=86400000)
         self._rmqclient.send(message=msg, key=queue)
         log.info('Sending RMQ message {0} to {1} with id {2}'.format(
             TokenSanitizer().sanitize(template), queue, msg_id))

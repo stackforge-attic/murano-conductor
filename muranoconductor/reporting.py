@@ -24,7 +24,7 @@ class Reporter(object):
         self._rmqclient = rmqclient
         self._task_id = task_id
         self._environment_id = environment_id
-        rmqclient.declare('task-reports')
+        rmqclient.declare('task-reports', enable_ha=True)
 
     def report_generic(self, text, details=None, level='info'):
         return self._report_func(None, None, text, details, level)
