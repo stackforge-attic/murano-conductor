@@ -17,6 +17,7 @@ import command
 import cloud_formation
 import network
 import vm_agent
+from muranoconductor import config as cfg
 
 
 class CommandDispatcher(command.CommandBase):
@@ -26,9 +27,9 @@ class CommandDispatcher(command.CommandBase):
                                                reporter),
             'agent': vm_agent.VmAgentExecutor(
                 environment, rmqclient, reporter),
-
-            'net': network.NeutronExecutor(tenant_id, token)
         }
+        if cfg.CONF.network_topology != "nova":  # Neutron-based topologies should init the proper executor.
+            self._command_map['net'] = network.NeutronExecutor(tenant_id, token)
 
     def execute(self, name, **kwargs):
         self._command_map[name].execute(**kwargs)
