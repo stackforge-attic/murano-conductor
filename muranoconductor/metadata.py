@@ -22,6 +22,7 @@ from metadataclient.common.exceptions import CommunicationError
 from muranoconductor import config
 from metadataclient.v1.client import Client
 import os
+from keystoneclient.v2_0 import client as ksclient
 from openstack.common import log as logging
 
 CHUNK_SIZE = 1 << 20  # 1MB
@@ -52,25 +53,34 @@ def _unpack_data_archive(task_id, hash):
     return dst_dir
 
 
-def get_endpoint():
+def get_endpoint(token_id, tenant_id):
     endpoint = CONF.murano_metadata_url
-
     if not endpoint:
-        #TODO: add keystone catalog lookup
-        pass
+        keystone_settings = CONF.keystone
+
+        client = ksclient.Client(auth_url=keystone_settings.auth_url,
+                                 token=token_id)
+
+        client.authenticate(
+            auth_url=keystone_settings.auth_url,
+            tenant_id=tenant_id,
+            token=token_id)
+
+        endpoint = client.service_catalog.url_for(
+            service_type='murano-metadata')
     return endpoint
 
 
-def metadataclient(token_id):
-    endpoint = get_endpoint()
+def metadataclient(token_id, tenant_id):
+    endpoint = get_endpoint(token_id, tenant_id)
     return Client(endpoint=endpoint, token=token_id)
 
 
-def get_metadata(task_id, token_id):
+def get_metadata(task_id, token_id, tenant_id):
     hash = _check_existing_hash()
     try:
         log.debug('Retrieving metadata from Murano Metadata Repository')
-        resp, body_iter = metadataclient(token_id).\
+        resp, body_iter = metadataclient(token_id, tenant_id).\
             metadata_client.get_conductor_data(hash)
     except CommunicationError as e:
         if hash:
