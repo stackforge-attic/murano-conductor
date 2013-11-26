@@ -27,6 +27,7 @@ from oslo.config import cfg
 from paste import deploy
 
 from muranoconductor import __version__ as version
+from muranoconductor.openstack.common import log
 from ConfigParser import SafeConfigParser
 
 paste_deploy_opts = [
@@ -98,6 +99,12 @@ CONF.import_opt('log_format', 'muranoconductor.openstack.common.log')
 CONF.import_opt('log_date_format', 'muranoconductor.openstack.common.log')
 CONF.import_opt('use_syslog', 'muranoconductor.openstack.common.log')
 CONF.import_opt('syslog_log_facility', 'muranoconductor.openstack.common.log')
+
+
+cfg.set_defaults(log.log_opts, default_log_levels=[
+    'iso8601=WARN',
+    'heatclient=WARN'
+])
 
 
 def parse_args(args=None, usage=None, default_config_files=None):
