@@ -22,7 +22,9 @@ PIPAPPS="pip python-pip pip-python"
 PIPCMD=""
 SERVICE_SRV_NAME="murano-conductor"
 GIT_CLONE_DIR=`echo $SERVICE_CONTENT_DIRECTORY | sed -e "s/$SERVICE_SRV_NAME//"`
-ETC_CFG_DIR="/etc/$SERVICE_SRV_NAME"
+#ETC_CFG_DIR="/etc/$SERVICE_SRV_NAME"
+ETC_CFG_DIR="/etc/murano"
+LOG_DIR="/var/log/murano/"
 SERVICE_CONFIG_FILE_PATH="$ETC_CFG_DIR/conductor.conf"
 
 # Functions
@@ -41,13 +43,13 @@ in_sys_pkg()
 	PKG=$1
 	rpm -q $PKG > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
-	    log "Package \"$PKG\" already installed"
+		log "Package \"$PKG\" already installed"
 	else
 		log "Installing \"$PKG\"..."
 		yum install $PKG --assumeyes > /dev/null 2>&1
 		if [ $? -ne 0 ];then
-		    log "installation fails, exiting!!!"
-		    exit
+			log "installation fails, exiting!!!"
+			exit
 		fi
 	fi
 }
@@ -55,19 +57,19 @@ in_sys_pkg()
 # find pip
 find_pip()
 {
-        for cmd in $PIPAPPS
-        do
-                _cmd=$(which $cmd 2>/dev/null)
-                if [ $? -eq 0 ];then
-                        break
-                fi
-        done
-        if [ -z $_cmd ];then
-                echo "Can't find \"pip\" in system, please install it first, exiting!"
-                exit 1
-        else
-                PIPCMD=$_cmd
-        fi
+	for cmd in $PIPAPPS
+	do
+		_cmd=$(which $cmd 2>/dev/null)
+		if [ $? -eq 0 ];then
+			break
+		fi
+	done
+	if [ -z $_cmd ];then
+		echo "Can't find \"pip\" in system, please install it first, exiting!"
+		exit 1
+	else
+		PIPCMD=$_cmd
+	fi
 }
 
 # git clone
@@ -77,10 +79,10 @@ gitclone()
 	CLONEROOT=$2
 	log "Cloning from \"$FROM\" repo to \"$CLONEROOT\""
 	cd $CLONEROOT && git clone $FROM > /dev/null 2>&1
-    if [ $? -ne 0 ];then
-	    log "cloning from \"$FROM\" fails, exiting!!!"
-	    exit
-    fi
+	if [ $? -ne 0 ];then
+		log "cloning from \"$FROM\" fails, exiting!!!"
+		exit
+	fi
 }
 
 # install
@@ -90,41 +92,41 @@ CLONE_FROM_GIT=$1
 # Checking packages
 	for PKG in $PREREQ_PKGS
 	do
-	    in_sys_pkg $PKG
+		in_sys_pkg $PKG
 	done
 # Find python pip
 	find_pip
 # If clone from git set
 	if [ ! -z $CLONE_FROM_GIT ]; then
 # Preparing clone root directory
-	if [ ! -d $GIT_CLONE_DIR ];then
-		log "Creating $GIT_CLONE_DIR direcory..."
-		mkdir -p $GIT_CLONE_DIR
-		if [ $? -ne 0 ];then
-		    log "Can't create $GIT_CLONE_DIR, exiting!!!"
-		    exit
+		if [ ! -d $GIT_CLONE_DIR ];then
+			log "Creating $GIT_CLONE_DIR direcory..."
+			mkdir -p $GIT_CLONE_DIR
+			if [ $? -ne 0 ];then
+				log "Can't create $GIT_CLONE_DIR, exiting!!!"
+				exit
+			fi
 		fi
-    fi
 # Cloning from GIT
 		GIT_WEBPATH_PRFX="https://github.com/stackforge/"
 		gitclone "$GIT_WEBPATH_PRFX$SERVICE_SRV_NAME.git" $GIT_CLONE_DIR
 # End clone from git section
-    fi
+	fi
 
 # Setupping...
 	log "Running setup.py"
 	MRN_CND_SPY=$GIT_CLONE_DIR/$SERVICE_SRV_NAME/setup.py
 	if [ -e $MRN_CND_SPY ];then
 		chmod +x $MRN_CND_SPY
-		log "$MRN_CND_SPY output:_____________________________________________________________"		
-## Setup through pip		
+		log "$MRN_CND_SPY output:_____________________________________________________________"
+## Setup through pip
 		# Creating tarball
 		rm -rf $SERVICE_CONTENT_DIRECTORY/*.egg-info
 		cd $SERVICE_CONTENT_DIRECTORY && python $MRN_CND_SPY egg_info
-                if [ $? -ne 0 ];then
-                        log "\"$MRN_CND_SPY\" egg info creation FAILS, exiting!!!"
-                        exit 1
-                fi
+		if [ $? -ne 0 ];then
+			log "\"$MRN_CND_SPY\" egg info creation FAILS, exiting!!!"
+			exit 1
+		fi
 		rm -rf $SERVICE_CONTENT_DIRECTORY/dist/*
 		cd $SERVICE_CONTENT_DIRECTORY && $MRN_CND_SPY sdist
 		if [ $? -ne 0 ];then
@@ -150,15 +152,29 @@ CLONE_FROM_GIT=$1
 			exit
 		fi
 	fi
+# Creating log directory for the murano
+	if [ ! -d $LOG_DIR ];then
+		log "Creating $LOG_DIR direcory..."
+		mkdir -p $LOG_DIR
+		if [ $? -ne 0 ];then
+			log "Can't create $LOG_DIR, exiting!!!"
+			exit 1
+		fi
+		chmod -R a+rw $LOG_DIR
+	fi
 # making sample configs
 	log "Making sample configuration files at \"$ETC_CFG_DIR\""
 	for file in $(ls $SERVICE_CONTENT_DIRECTORY/etc)
 	do
-		cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
+		if [ -d "$SERVICE_CONTENT_DIRECTORY/etc/$file" ];then
+			cp -f -R "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/"
+		else
+			cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
+		fi
 	done
 # making templates data
-	log "Making templates directory"
-	cp -f -R  "$SERVICE_CONTENT_DIRECTORY/data" "$ETC_CFG_DIR/"
+	#log "Making templates directory"
+	#cp -f -R  "$SERVICE_CONTENT_DIRECTORY/data" "$ETC_CFG_DIR/"
 }
 
 # searching for service executable in path
@@ -187,24 +203,24 @@ start on runlevel [2345]
 stop on runlevel [!2345]
 respawn
 exec $SERVICE_EXEC_PATH --config-file=$SERVICE_CONFIG_FILE_PATH" > "/etc/init/$SERVICE_SRV_NAME.conf"
-    log "Reloading initctl"
-    initctl reload-configuration
+	log "Reloading initctl"
+	initctl reload-configuration
 }
 
 # purge init
 purgeinit()
 {
-    rm -f /etc/init/$SERVICE_SRV_NAME.conf
-    log "Reloading initctl"
-    initctl reload-configuration
+	rm -f /etc/init/$SERVICE_SRV_NAME.conf
+	log "Reloading initctl"
+	initctl reload-configuration
 }
 
 # uninstall
 uninst()
 {
-	# Uninstall trough  pip
+# Uninstall trough  pip
 	find_pip
-        # looking up for python package installed
+# looking up for python package installed
 	PYPKG=$SERVICE_SRV_NAME
 	_pkg=$($PIPCMD freeze | grep $PYPKG)
 	if [ $? -eq 0 ]; then
@@ -224,10 +240,10 @@ postinst()
 COMMAND="$1"
 case $COMMAND in
 	inject-init )
-	    get_service_exec_path
-	    log "Injecting \"$SERVICE_SRV_NAME\" to init..."
-	    injectinit
-	    postinst
+		get_service_exec_path
+		log "Injecting \"$SERVICE_SRV_NAME\" to init..."
+		injectinit
+		postinst
 		;;
 
 	install )
