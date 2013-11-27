@@ -95,7 +95,8 @@ class ConductorWorkflowService(service.Service):
                 reporter = reporting.Reporter(mq, message_id, task['id'])
 
                 metadata_version = metadata.get_metadata(task['id'],
-                                                         task['token'])
+                                                         task['token'],
+                                                         task['tenant_id'])
                 command_dispatcher = CommandDispatcher('e' + task['id'], mq,
                                                        task['token'],
                                                        task['tenant_id'],
