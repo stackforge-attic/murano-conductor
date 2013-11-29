@@ -22,6 +22,7 @@ import logging.config
 import logging.handlers
 import os
 import sys
+import tempfile
 
 from oslo.config import cfg
 from paste import deploy
@@ -36,9 +37,10 @@ paste_deploy_opts = [
 ]
 
 directories = [
-    cfg.StrOpt('data_dir', default='program_data'),
-    cfg.StrOpt('init_scripts_dir', default='./etc/init-scripts'),
-    cfg.StrOpt('agent_config_dir', default='./etc/agent-config'),
+    cfg.StrOpt('data_dir', default=os.path.join(tempfile.gettempdir(),
+                                                'muranoconductor-cache')),
+    cfg.StrOpt('init_scripts_dir', default='etc/init-scripts'),
+    cfg.StrOpt('agent_config_dir', default='etc/agent-config'),
 ]
 
 rabbit_opts = [
