@@ -73,10 +73,7 @@ def get_default_network(engine, context, body, result=None):
 
 
 def get_network_topology(engine, context, body, result=None):
-    if muranoconductor.config.CONF.flat_by_default:
-        return "flat"
-    else:
-        return "routed"
+    return muranoconductor.config.CONF.network_topology
 
 
 xml_code_engine.XmlCodeEngine.register_function(
