@@ -33,6 +33,7 @@ class NeutronExecutor(CommandBase):
         self.cidr_waiting_per_router = {}
         self.router_requests = []
         self.network_requests = []
+        self.tenant_id = tenant_id
 
         keystone_client = ksclient.Client(
             endpoint=keystone_settings.auth_url,
@@ -89,7 +90,8 @@ class NeutronExecutor(CommandBase):
         if not len(self.router_requests):
             return False
 
-        routers = self.neutron.list_routers().get("routers")
+        routers = self.neutron.list_routers(tenant_id=self.tenant_id).\
+            get("routers")
         if not len(routers):
             routerId = None
         else:
