@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Serg Melikyan <smelikyan@mirantis.com>
+Code-Review+2: Serg Melikyan <smelikyan@mirantis.com>
+Verified-1: murano-ci
+Submitted-by: Jenkins
+Submitted-at: Tue, 03 Dec 2013 12:10:32 +0000
+Reviewed-on: https://review.openstack.org/59691
+Project: stackforge/murano-conductor
+Branch: refs/heads/master
