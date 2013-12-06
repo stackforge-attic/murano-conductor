@@ -20,7 +20,8 @@ from openstack.common import log as logging
 log = logging.getLogger(__name__)
 
 
-def get_available_subnet(engine, context, body, routerId=None, result=None):
+def get_subnet(engine, context, body, routerId=None, existingNetwork=None,
+               result=None):
     command_dispatcher = context['/commandDispatcher']
 
     def callback(result_value):
@@ -31,9 +32,15 @@ def get_available_subnet(engine, context, body, routerId=None, result=None):
         if success_handler is not None:
             engine.evaluate_content(success_handler, context)
 
+    if existingNetwork:
+        command = "get_existing_subnet"
+    else:
+        command = "get_new_subnet"
+
     command_dispatcher.execute(
         name="net",
-        command="get_subnet",
+        command=command,
+        existingNetwork=existingNetwork,
         routerId=routerId,
         callback=callback)
 
@@ -77,7 +84,7 @@ def get_network_topology(engine, context, body, result=None):
 
 
 xml_code_engine.XmlCodeEngine.register_function(
-    get_available_subnet, "get-cidr")
+    get_subnet, "get-cidr")
 
 xml_code_engine.XmlCodeEngine.register_function(
     get_default_router, "get-default-router-id")

@@ -127,8 +127,11 @@ class Workflow(object):
         elif path.startswith('#'):
             result = context[path[1:]]
         elif source is not None:
-            result = Workflow._get_path(
-                context[source], path.split('.'))
+            if path == '':
+                p = []
+            else:
+                p = path.split('.')
+            result = Workflow._get_path(context[source], p)
         else:
             result = Workflow._get_path(
                 context['/dataSource'],
