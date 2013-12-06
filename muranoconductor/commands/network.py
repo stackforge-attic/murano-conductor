@@ -31,6 +31,7 @@ class NeutronExecutor(CommandBase):
         self.address = muranoconductor.config.CONF.env_ip_template
 
         self.cidr_waiting_per_router = {}
+        self.cidr_waiting_per_network = {}
         self.router_requests = []
         self.network_requests = []
         self.tenant_id = tenant_id
@@ -57,7 +58,8 @@ class NeutronExecutor(CommandBase):
                                      insecure=neutron_settings.insecure)
 
         self.command_map = {
-            "get_subnet": self._schedule_get_subnet,
+            "get_new_subnet": self._schedule_get_new_subnet,
+            "get_existing_subnet": self._schedule_get_existing_subnet,
             "get_router": self._schedule_get_router,
             "get_network": self._schedule_get_network
         }
@@ -68,15 +70,17 @@ class NeutronExecutor(CommandBase):
 
     def has_pending_commands(self):
         return len(self.cidr_waiting_per_router) + len(
-            self.router_requests) + len(self.network_requests) > 0
+            self.cidr_waiting_per_network) + len(self.router_requests) + len(
+                self.network_requests) > 0
 
     def execute_pending(self):
-        r1 = self._execute_pending_cidr_requests()
+        r1 = self._execute_pending_new_cidr_requests()
         r2 = self._execute_pending_net_requests()
         r3 = self._execute_pending_router_requests()
-        return r1 or r2 or r3
+        r4 = self._execute_pending_existing_cidr_requests()
+        return r1 or r2 or r3 or r4
 
-    def _execute_pending_cidr_requests(self):
+    def _execute_pending_new_cidr_requests(self):
         if not len(self.cidr_waiting_per_router):
             return False
         for router, callbacks in self.cidr_waiting_per_router.items():
@@ -86,11 +90,21 @@ class NeutronExecutor(CommandBase):
         self.cidr_waiting_per_router = {}
         return True
 
+    def _execute_pending_existing_cidr_requests(self):
+        if not len(self.cidr_waiting_per_network):
+            return False
+        for network, callbacks in self.cidr_waiting_per_network.items():
+            result = self._get_existing_subnet(network)
+            for callback in callbacks:
+                callback(result)
+        self.cidr_waiting_per_network = {}
+        return True
+
     def _execute_pending_router_requests(self):
         if not len(self.router_requests):
             return False
 
-        routers = self.neutron.list_routers(tenant_id=self.tenant_id).\
+        routers = self.neutron.list_routers(tenant_id=self.tenant_id). \
             get("routers")
         if not len(routers):
             routerId = None
@@ -153,6 +167,13 @@ class NeutronExecutor(CommandBase):
             taken_cidrs.append(res)
         return results
 
+    def _get_existing_subnet(self, network_id):
+        subnets = self.neutron.list_subnets(network_id=network_id)['subnets']
+        if not subnets:
+            return None
+        else:
+            return subnets[0]['cidr']
+
     def _get_taken_cidrs_by_router(self, routerId):
         ports = self.neutron.list_ports(device_id=routerId)["ports"]
         subnet_ids = []
@@ -182,7 +203,7 @@ class NeutronExecutor(CommandBase):
             return str(subnet)
         return None
 
-    def _schedule_get_subnet(self, callback, **kwargs):
+    def _schedule_get_new_subnet(self, callback, **kwargs):
         routerId = kwargs.get("routerId")
         if not routerId:
             routerId = "*"
@@ -190,6 +211,14 @@ class NeutronExecutor(CommandBase):
             self.cidr_waiting_per_router[routerId].append(callback)
         else:
             self.cidr_waiting_per_router[routerId] = [callback]
+
+    def _schedule_get_existing_subnet(self, callback, **kwargs):
+        existing_network = kwargs.get("existingNetwork")
+
+        if existing_network in self.cidr_waiting_per_network:
+            self.cidr_waiting_per_network[existing_network].append(callback)
+        else:
+            self.cidr_waiting_per_network[existing_network] = [callback]
 
     def _schedule_get_router(self, callback, **kwargs):
         self.router_requests.append(callback)
