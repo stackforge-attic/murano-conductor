@@ -23,6 +23,8 @@ from muranoconductor import config
 from metadataclient.v1.client import Client
 import os
 from keystoneclient.v2_0 import client as ksclient
+from keystoneclient.exceptions import EndpointNotFound
+
 from openstack.common import log as logging
 
 CHUNK_SIZE = 1 << 20  # 1MB
@@ -66,8 +68,15 @@ def get_endpoint(token_id, tenant_id):
             tenant_id=tenant_id,
             token=token_id)
 
-        endpoint = client.service_catalog.url_for(
-            service_type='murano-metadata')
+        try:
+            endpoint = client.service_catalog.url_for(
+                service_type='murano-metadata')
+        except EndpointNotFound:
+            endpoint = 'http://localhost:8084/v1'
+            log.warning(
+                'Murano Metadata API location could not be found in the '
+                'Keystone Service Catalog, using default: {0}'.format(
+                    endpoint))
     return endpoint
 
 
