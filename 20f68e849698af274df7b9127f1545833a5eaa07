@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Ekaterina Fedorova <efedorova@mirantis.com>
+Code-Review+2: Ekaterina Fedorova <efedorova@mirantis.com>
+Verified+1: murano-ci
+Submitted-by: Jenkins
+Submitted-at: Wed, 11 Dec 2013 08:58:13 +0000
+Reviewed-on: https://review.openstack.org/61170
+Project: stackforge/murano-conductor
+Branch: refs/heads/master
