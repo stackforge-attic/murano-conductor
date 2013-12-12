@@ -67,7 +67,10 @@ class VmAgentExecutor(CommandBase):
             os.path.dirname(path), 'scripts')
         script_files = template.get('Scripts', [])
         scripts = []
+        log.debug('Template {0}, path {1}, scripts folder {2}'.format(
+            template, path, scripts_folder))
         for script in script_files:
+            log.debug('Script {0}'.format(script))
             script_path = os.path.join(scripts_folder, script)
             log.debug('Loading script "{0}"'.format(script_path))
             with open(script_path) as script_file:
