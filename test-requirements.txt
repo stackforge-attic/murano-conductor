@@ -5,5 +5,5 @@ nose-exclude
 nosexcover
 #openstack.nose_plugin
 pep8
-sphinx>=1.1.2
+sphinx>=1.1.2,<1.2
 mockfs
