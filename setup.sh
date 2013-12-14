@@ -23,6 +23,7 @@ GIT_CLONE_DIR=`echo $SERVICE_CONTENT_DIRECTORY | sed -e "s/$SERVICE_SRV_NAME//"`
 #ETC_CFG_DIR="/etc/$SERVICE_SRV_NAME"
 ETC_CFG_DIR="/etc/murano"
 LOG_DIR="/var/log/murano/"
+CACHE_DIR="/var/cache/murano/"
 SERVICE_CONFIG_FILE_PATH="$ETC_CFG_DIR/conductor.conf"
 
 # Functions
@@ -142,14 +143,22 @@ CLONE_FROM_GIT=$1
 	fi
 # making sample configs
 	log "Making sample configuration files at \"$ETC_CFG_DIR\""
-	for file in $(ls $SERVICE_CONTENT_DIRECTORY/etc)
+	for file in $(ls $SERVICE_CONTENT_DIRECTORY/etc/murano)
 	do
-		if [ -d "$SERVICE_CONTENT_DIRECTORY/etc/$file" ];then
-			cp -f -R "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/"
+		if [ -d "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" ];then
+			cp -f -R "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" "$ETC_CFG_DIR/"
 		else
-			cp -f "$SERVICE_CONTENT_DIRECTORY/etc/$file" "$ETC_CFG_DIR/$file.sample"
+			cp -f "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" "$ETC_CFG_DIR/$file.sample"
 		fi
 	done
+        log "Making common $CACHE_DIR"
+        if [ ! -d "$CACHE_DIR" ]; then
+                mkdir -p $CACHE_DIR
+                if [ $? -ne 0 ];then
+                        log "Can't create \"$CACHE_DIR\", exiting!!!"
+                        exit 1
+                fi
+        fi
 # making templates data
 	#log "Making templates directory"
 	#cp -f -R  "$SERVICE_CONTENT_DIRECTORY/data" "$ETC_CFG_DIR/"
