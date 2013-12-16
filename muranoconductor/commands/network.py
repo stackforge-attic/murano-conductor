@@ -107,7 +107,7 @@ class NeutronExecutor(CommandBase):
         routers = self.neutron.list_routers(tenant_id=self.tenant_id). \
             get("routers")
         if not len(routers):
-            routerId = None
+            routerId = "NOT_FOUND"
         else:
             routerId = routers[0]["id"]
 
