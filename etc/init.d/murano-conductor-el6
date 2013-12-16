@@ -34,7 +34,7 @@ DAEMON=$(which muranoconductor)
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/openstack-$NAME
 SYSTEM_USER=root
-CONFIG_FILE=/etc/murano/conductor.conf
+CONFIG_FILE=/etc/murano/murano-conductor.conf
 LOCKFILE=/var/lock/subsys/$NAME
 # Exit if the package is not installed
 [ -x $DAEMON ] || exit 5
