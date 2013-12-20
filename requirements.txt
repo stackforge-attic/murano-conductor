@@ -11,8 +11,7 @@ netaddr
 
 oslo.config>=1.2.0
 deep
-# Please, revert to murano-common>=x.x.x before release
-http://tarballs.openstack.org/murano-common/murano-common-master.tar.gz#egg=muranocommon-0.4
+murano-common==0.4
 PyYAML>=3.1.0
-http://tarballs.openstack.org/murano-metadataclient/murano-metadataclient-master.tar.gz#egg=metadataclient-0.4
+murano-metadataclient==0.4
 python-neutronclient>=2.3.0,<3
