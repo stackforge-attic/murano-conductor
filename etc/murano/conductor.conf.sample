@@ -1,0 +1,98 @@
+[DEFAULT]
+
+# Set up logging. To use syslog just set use_syslog parameter value to 'True'.
+log_file = /tmp/murano-conductor.log
+use_syslog = True
+syslog-log-facility=LOG_LOCAL0
+
+# Log verbosity
+debug = True
+verbose = True
+
+# Provide directory with initialization scripts
+init_scripts_dir = etc/murano/init-scripts
+
+# Provide directory with agent configs
+agent_config_dir = etc/murano/agent-config
+
+# Directory for data cache, OS temp directory is used by default
+data_dir = /tmp/muranoconductor-cache
+
+# Provide url to Murano Metadata repository
+# Comment this line if you registered murano-metadata in keystone catalog
+murano_metadata_url = http://localhost:8084/v1
+
+# Maximum number of environments that can be processed simultaneously
+max_environments = 20
+
+# Maximum number of VMs per environment
+max_hosts = 250
+
+# Template IP address for generating environment subnet cidrs
+env_ip_template = 10.0.0.0
+
+# Enforces default network topology.
+# Allowed values: nova, flat, routed
+# default is routed
+network_topology = routed
+
+[keystone]
+# URL of OpenStack KeyStone service REST API.
+# Typically only hostname (or IP) needs to be changed
+auth_url = http://localhost:5000/v2.0
+
+# Keystone SSL parameters
+# Optional CA cert file to use in SSL connections
+#ca_file =
+# Optional PEM-formatted certificate chain file
+#cert_file =
+# Optional PEM-formatted file that contains the private key
+#key_file =
+# If set then the server's certificate will not be verified
+insecure = False
+
+[heat]
+# Heat SSL parameters
+# Optional CA cert file to use in SSL connections
+#ca_file =
+# Optional PEM-formatted certificate chain file
+#cert_file =
+# Optional PEM-formatted file that contains the private key
+#key_file =
+# If set then the server's certificate will not be verified
+insecure = False
+# Valid endpoint types: publicURL (default), internalURL, adminURL
+endpoint_type = publicURL
+
+[neutron]
+# Optional CA cert file to use in SSL connections
+#ca_cert =
+# Allow self signed server certificate
+insecure = False
+# Valid endpoint types: publicURL (default), internalURL, adminURL
+endpoint_type = publicURL
+
+[rabbitmq]
+# Connection parameters to RabbitMQ service
+
+# Hostname or IP address where RabbitMQ is located.
+# !!! Change localhost to your real IP or hostname as this address must be reachable from VMs  !!!
+host = localhost
+
+# RabbitMQ port (5672 is a default)
+port = 5672
+
+# Use SSL for RabbitMQ connections (True or False)
+ssl = False
+
+# Path to SSL CA certificate or empty to allow self signed server certificate
+#ca_certs =
+
+# RabbitMQ credentials. Fresh RabbitMQ installation has "guest" account with "guest" password.
+# It is recommended to create dedicated user account for Murano using RabbitMQ web console or command line utility
+login = guest
+password = guest
+
+# RabbitMQ virtual host (vhost). Fresh RabbitMQ installation has "/" vhost preconfigured.
+# It is recommended to create dedicated vhost for Murano using RabbitMQ web console or command line utility
+virtual_host = /
