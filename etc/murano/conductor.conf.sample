@@ -1,13 +1,13 @@
 [DEFAULT]
 
-# Set up logging. Make sure the user has permissions to write to this file! To use syslog just set use_syslog parameter value to 'True'.
-log_file = /var/log/murano/murano-conductor.log
-use_syslog=False
+# Set up logging. To use syslog just set use_syslog parameter value to 'True'
+log_file = /tmp/murano-conductor.log
+use_syslog = False
 syslog-log-facility=LOG_LOCAL0
 
 # Log verbosity
-debug=False
-verbose=False
+debug = True
+verbose = True
 
 # Provide directory with initialization scripts
 init_scripts_dir = etc/murano/init-scripts
