@@ -41,8 +41,8 @@ else {
 Write-Log "Updating Murano Windows Agent."
 Stop-Service "Murano Agent"
 Backup-File $WindowsAgentConfigFile
-Remove-Item $WindowsAgentConfigFile -Force
-Remove-Item $WindowsAgentLogFile -Force
+Remove-Item $WindowsAgentConfigFile -Force -ErrorAction 'SilentlyContinue'
+Remove-Item $WindowsAgentLogFile -Force -ErrorAction 'SilentlyContinue'
 ConvertFrom-Base64String -Base64String $WindowsAgentConfigBase64 -Path $WindowsAgentConfigFile
 Exec sc.exe 'config','"Murano Agent"','start=','delayed-auto'
 Write-Log "Service has been updated."
