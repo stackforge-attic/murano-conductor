@@ -148,7 +148,7 @@ CLONE_FROM_GIT=$1
 		if [ -d "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" ];then
 			cp -f -R "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" "$ETC_CFG_DIR/"
 		else
-			cp -f "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" "$ETC_CFG_DIR/$file.sample"
+			cp -f "$SERVICE_CONTENT_DIRECTORY/etc/murano/$file" "$ETC_CFG_DIR/$file"
 		fi
 	done
         log "Making common $CACHE_DIR"
