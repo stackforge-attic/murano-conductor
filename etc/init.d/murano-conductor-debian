@@ -28,7 +28,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 DESC="murano-conductor"
 NAME=murano-conductor
-DAEMON=$(which murano-conductor)
+DAEMON=$(which muranoconductor)
 PIDFILE=/var/run/murano/$NAME.pid
 SCRIPTNAME=/etc/init.d/openstack-$NAME
 SYSTEM_USER=murano
