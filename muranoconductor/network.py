@@ -48,9 +48,10 @@ def get_subnet(engine, context, body, routerId=None, existingNetwork=None,
 def get_default_router(engine, context, body, result=None):
     command_dispatcher = context['/commandDispatcher']
 
-    def callback(result_value):
+    def callback(routerId, floatingId):
         if result is not None:
-            context[result] = {"routerId": result_value}
+            context[result] = {"routerId": routerId,
+                               "floatingId": floatingId}
 
         success_handler = body.find('success')
         if success_handler is not None:

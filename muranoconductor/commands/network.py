@@ -116,8 +116,13 @@ class NeutronExecutor(CommandBase):
                 if "murano" in router["name"].lower():
                     routerId = router["id"]
                     break
+
+        # Get network for that router
+        floatingId = self.neutron.show_router(
+            routerId)['router']['external_gateway_info']['network_id']
+
         for callback in self.router_requests:
-            callback(routerId)
+            callback(routerId, floatingId)
         self.router_requests = []
         return True
 

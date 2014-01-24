@@ -215,6 +215,7 @@ class Workflow(object):
         position, match = Workflow._get_relative_position(match, context)
         if not desc:
             desc = match
+
         data = Workflow._get_path(context['/dataSource'], position)
         match = re.sub(r'@\.([\w.]+)',
                        r"Workflow._get_path(@, '\1'.split('.'))", match)
@@ -226,6 +227,8 @@ class Workflow(object):
         for found_match in selected:
             if 0 < int(limit) <= index:
                 break
+            if 'floating' in desc:
+                pass
             index += 1
             new_position = position + found_match[1:]
             context['__dataSource_currentPosition'] = new_position
