@@ -107,17 +107,21 @@ class NeutronExecutor(CommandBase):
         routers = self.neutron.list_routers(tenant_id=self.tenant_id). \
             get("routers")
         if not len(routers):
-            routerId = "NOT_FOUND"
+            routerId, externalNetId = "NOT_FOUND"
         else:
             routerId = routers[0]["id"]
+            externalNetId = routers[0]['external_gateway_info']['network_id']
 
         if len(routers) > 1:
             for router in routers:
                 if "murano" in router["name"].lower():
                     routerId = router["id"]
+                    externalNetId = router['external_' \
+                                           'gateway_info']['network_id']
                     break
+
         for callback in self.router_requests:
-            callback(routerId)
+            callback(routerId, externalNetId)
         self.router_requests = []
         return True
 

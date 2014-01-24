@@ -215,6 +215,7 @@ class Workflow(object):
         position, match = Workflow._get_relative_position(match, context)
         if not desc:
             desc = match
+
         data = Workflow._get_path(context['/dataSource'], position)
         match = re.sub(r'@\.([\w.]+)',
                        r"Workflow._get_path(@, '\1'.split('.'))", match)
