@@ -62,13 +62,49 @@ class VmAgentExecutor(CommandBase):
         else:
             return self._build_v2_execution_plan(template, path)
 
+    def _split_path(self, _path, parts=None):
+        if parts is None:
+            parts = []
+        head, tail = os.path.split(_path)
+        if tail:
+            parts.append(tail)
+        elif os.path.isabs(head):  # head is '/' and tail is '' - stop
+            parts.append(head)
+            head = None
+        if head:
+            return self._split_path(head, parts)
+        else:
+            parts.reverse()
+            return parts
+
+    @staticmethod
+    def _join(*args):
+        return os.path.join(*args) if args else ''
+
+    def _split_agent_path(self, path, agent_root_dir_depth=3):
+        agent_subdir = os.path.dirname(os.path.normpath(path))
+        dir_parts = self._split_path(agent_subdir)
+        return (self._join(*dir_parts[:agent_root_dir_depth]),
+                self._join(*dir_parts[agent_root_dir_depth:]))
+
+    def _ensure_relpath(self, path):
+        parts = self._split_path(os.path.normpath(path))
+        if parts and os.path.isabs(parts[0]):
+            return self._join(*parts[1:]), True
+        else:
+            return path, False
+
     def _build_v1_execution_plan(self, template, path):
-        scripts_folder = os.path.join(
-            os.path.dirname(path), 'scripts')
+        agent_dir_root, rest_dirs = self._split_agent_path(path)
+        scripts_folder = os.path.join(agent_dir_root, 'scripts')
         script_files = template.get('Scripts', [])
         scripts = []
         for script in script_files:
-            script_path = os.path.join(scripts_folder, script)
+            script, was_abspath = self._ensure_relpath(script)
+            if was_abspath:
+                script_path = os.path.join(scripts_folder, script)
+            else:
+                script_path = os.path.join(scripts_folder, rest_dirs, script)
             log.debug('Loading script "{0}"'.format(script_path))
             with open(script_path) as script_file:
                 script_data = script_file.read()
