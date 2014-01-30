@@ -78,10 +78,10 @@ def delete_cf_stack(engine, context, body, **kwargs):
 
 
 def prepare_user_data(context, hostname, service, unit,
-                      template='Default', initFile='init.ps1', **kwargs):
+                      template='Default', init_file='init.ps1', **kwargs):
     settings = cfg.CONF.rabbitmq
     path_to_init_file = '{0}/{1}'.format(basename(cfg.CONF.init_scripts_dir),
-                                         initFile)
+                                         init_file)
     with open(path_to_init_file) as init_script_file:
         with open('{0}/{1}.template'.format(
                 basename(cfg.CONF.agent_config_dir), template)
