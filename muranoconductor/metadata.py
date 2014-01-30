@@ -135,14 +135,26 @@ def release(folder):
 def prepare(data_dir):
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
+        log.info("Creating directory '{0}' to store "
+                 "conductor data".format(data_dir))
     init_scripts_dst = os.path.join(data_dir,
                                     os.path.basename(CONF.init_scripts_dir))
-    if not os.path.exists(init_scripts_dst):
-        shutil.copytree(CONF.init_scripts_dir, init_scripts_dst)
+    if os.path.exists(init_scripts_dst):
+        log.info("Found existing init scripts directory at"
+                 " '{0}'. Deleting it.'".format(init_scripts_dst))
+        shutil.rmtree(init_scripts_dst)
+    log.info("Copying init scripts directory from '{0}' "
+             "to '{1}'".format(CONF.init_scripts_dir, init_scripts_dst))
+    shutil.copytree(CONF.init_scripts_dir, init_scripts_dst)
+
     agent_config_dst = os.path.join(data_dir,
                                     os.path.basename(CONF.agent_config_dir))
-    if not os.path.exists(agent_config_dst):
-        shutil.copytree(CONF.agent_config_dir, agent_config_dst)
+    if os.path.exists(agent_config_dst):
+        log.info("Found existing agent config directory at"
+                 " '{0}'. Deleting it.'".format(agent_config_dst))
+    log.info("Copying agent config directory from '{0}' "
+             "to '{1}'".format(CONF.agent_config_dir, agent_config_dst))
+    shutil.copytree(CONF.agent_config_dir, agent_config_dst)
     os.chdir(data_dir)
 
 

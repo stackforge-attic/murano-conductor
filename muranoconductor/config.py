@@ -39,8 +39,8 @@ paste_deploy_opts = [
 directories = [
     cfg.StrOpt('data_dir', default=os.path.join(tempfile.gettempdir(),
                                                 'muranoconductor-cache')),
-    cfg.StrOpt('init_scripts_dir', default='etc/init-scripts'),
-    cfg.StrOpt('agent_config_dir', default='etc/agent-config'),
+    cfg.StrOpt('init_scripts_dir'),
+    cfg.StrOpt('agent_config_dir'),
 ]
 
 rabbit_opts = [
