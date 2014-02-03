@@ -152,6 +152,7 @@ def prepare(data_dir):
     if os.path.exists(agent_config_dst):
         log.info("Found existing agent config directory at"
                  " '{0}'. Deleting it.'".format(agent_config_dst))
+        shutil.rmtree(agent_config_dst)
     log.info("Copying agent config directory from '{0}' "
              "to '{1}'".format(CONF.agent_config_dir, agent_config_dst))
     shutil.copytree(CONF.agent_config_dir, agent_config_dst)
