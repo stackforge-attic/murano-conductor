@@ -125,11 +125,12 @@ function inject_init()
     retval=0
     _dist=$(lowercase $DISTRO_BASED_ON)
     eval src_init_sctipt="$DAEMON_NAME-$_dist"
-    _initscript="openstack-$DAEMON_NAME"
+    _initscript="$DAEMON_NAME"
     cp -f "$RUN_DIR/etc/init.d/$src_init_sctipt" "/etc/init.d/$_initscript" || retval=$?
     chmod +x "/etc/init.d/$_initscript" || retval=$?
     iniset '' 'SYSTEM_USER' "$DAEMON_USER" "/etc/init.d/$_initscript"
     iniset '' 'DAEMON' "$(shslash $SERVICE_EXEC_PATH)" "/etc/init.d/$_initscript"
+    iniset '' 'SCRIPTNAME' "$(shslash "/etc/init.d/$_initscript")" "/etc/init.d/$_initscript"
     case $_dist in
         "debian")
             update-rc.d $_initscript defaults || retval=$?
@@ -146,7 +147,7 @@ function purge_init()
 {
     retval=0
     _dist=$(lowercase $DISTRO_BASED_ON)
-    _initscript="openstack-$DAEMON_NAME"
+    _initscript="$DAEMON_NAME"
     service $_initscript stop
     if [ $? -ne 0 ]; then
         retval=1
@@ -231,7 +232,7 @@ function install_daemon()
     log "...found at \"$SERVICE_EXEC_PATH\""
     log "Installing SysV init script."
     inject_init || exit $?
-    log "Everything done, please, verify \"$DAEMON_CFG_DIR/$DAEMON_NAME.conf\", service created as \"openstack-${DAEMON_NAME}\"."
+    log "Everything done, please, verify \"$DAEMON_CFG_DIR/$DAEMON_NAME.conf\", service created as \"${DAEMON_NAME}\"."
 }
 function uninstall_daemon()
 {
