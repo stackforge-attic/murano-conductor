@@ -34,19 +34,38 @@ import network
 
 log = logging.getLogger(__name__)
 
+import uuid
 
-class ConductorWorkflowService(service.Service):
-    def __init__(self):
-        super(ConductorWorkflowService, self).__init__()
+from oslo import messaging
+from oslo.messaging import MessageHandlingServer
+from oslo.messaging import serializer as msg_serializer
+from oslo.messaging.target import Target
 
-    def start(self):
-        super(ConductorWorkflowService, self).start()
-        self.tg.add_thread(self._start_rabbitmq)
+from muranoconductor import config
+from muranoconductor import rpc
 
-    def stop(self):
-        super(ConductorWorkflowService, self).stop()
+RPC_SERVICE = None
 
-    def create_rmq_client(self):
+
+def _prepare_rpc_service(server_id):
+    endpoints = [ConductorWorkflowEndpoint()]
+
+    transport = messaging.get_transport(config.CONF)
+    target = Target('murano', 'tasks', server=server_id)
+    return messaging.get_rpc_server(transport, target, endpoints, 'eventlet')
+
+
+def get_rpc_service():
+    global RPC_SERVICE
+
+    if RPC_SERVICE is None:
+        RPC_SERVICE = _prepare_rpc_service(str(uuid.uuid4()))
+    return RPC_SERVICE
+
+
+class ConductorWorkflowEndpoint(object):
+    @staticmethod
+    def _create_rmq_client():
         rabbitmq = cfg.CONF.rabbitmq
         connection_params = {
             'login': rabbitmq.login,
@@ -59,40 +78,19 @@ class ConductorWorkflowService(service.Service):
         }
         return MqClient(**connection_params)
 
-    def _start_rabbitmq(self):
-        reconnect_delay = 1
-        while True:
-            try:
-                with self.create_rmq_client() as mq:
-                    mq.declare('tasks', 'tasks', enable_ha=True)
-                    mq.declare('task-results', enable_ha=True)
-                    with mq.open('tasks',
-                                 prefetch_count=
-                                 cfg.CONF.max_environments) as subscription:
-                        reconnect_delay = 1
-                        while True:
-                            msg = subscription.get_message(timeout=2)
-                            if msg is not None:
-                                eventlet.spawn(self._task_received, msg)
-            except Exception as ex:
-                log.exception(ex)
-
-                eventlet.sleep(reconnect_delay)
-                reconnect_delay = min(reconnect_delay * 2, 60)
-
-    def _task_received(self, message):
-        task = message.body or {}
-        message_id = message.id
-        do_ack = False
+    @staticmethod
+    def handle_task(context, task):
+        #FIXME: Need to be removed
+        message_id = ''
         reporter = None
 
-        with self.create_rmq_client() as mq:
+        with ConductorWorkflowEndpoint._create_rmq_client() as mq:
             try:
 
                 secure_task = TokenSanitizer().sanitize(task)
                 log.info('Starting processing task {0}: {1}'.format(
                     message_id, anyjson.dumps(secure_task)))
-                reporter = reporting.Reporter(mq, message_id, task['id'])
+                reporter = reporting.Reporter(message_id, task['id'])
 
                 metadata_version = metadata.get_metadata(task['id'],
                                                          task['token'],
@@ -130,7 +128,8 @@ class ConductorWorkflowService(service.Service):
                             log.debug("No pending commands found, "
                                       "seems like we are done")
                             break
-                        if self.check_stop_requested(task):
+                        if ConductorWorkflowEndpoint._check_stop_requested(
+                                task):
                             log.info("Workflow stop requested")
                             stop = True
                     except Exception as ex:
@@ -142,27 +141,20 @@ class ConductorWorkflowService(service.Service):
                 command_dispatcher.close()
                 if stop:
                     log.info("Workflow stopped by 'stop' command")
-                do_ack = True
                 metadata.release(task['id'])
             except Exception as ex:
                 log.exception(ex)
                 log.debug("Non-processable message detected, "
                           "will ack message")
-                do_ack = True
             finally:
-                if do_ack:
-                    self.cleanup(task, reporter)
-                    result_msg = Message()
-                    result_msg.body = task
-                    result_msg.id = message_id
-
-                    mq.send(message=result_msg, key='task-results')
-                    message.ack()
+                ConductorWorkflowEndpoint._cleanup(task, reporter)
+                rpc.api().process_result(task)
 
         log.info('Finished processing task {0}. Result = {1}'.format(
             message_id, anyjson.dumps(TokenSanitizer().sanitize(task))))
 
-    def cleanup(self, model, reporter):
+    @staticmethod
+    def _cleanup(model, reporter):
         try:
             if 'token' in model:
                 del model['token']
@@ -185,7 +177,8 @@ class ConductorWorkflowService(service.Service):
                 reporter.report_generic("Unexpected error has occurred",
                                         e.message, 'error')
 
-    def check_stop_requested(self, model):
+    @staticmethod
+    def _check_stop_requested(model):
         if 'temp' in model:
             if '_stop_requested' in model['temp']:
                 return model['temp']['_stop_requested']

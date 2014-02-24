@@ -13,24 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import os
+import sys
+
+import eventlet
+eventlet.monkey_patch()
 
 # If ../muranoconductor/__init__.py exists, add ../ to Python search path, so
 # it will override what happens to be installed in /usr/(local/)lib/python...
-possible_topdir = os.path.normpath(os.path.join(os.path.abspath(__file__),
-                                                os.pardir,
-                                                os.pardir,
-                                                os.pardir))
-if os.path.exists(os.path.join(possible_topdir,
-                               'muranoconductor',
-                               '__init__.py')):
-    sys.path.insert(0, possible_topdir)
+root = os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, os.pardir)
+if os.path.exists(os.path.join(root, 'muranoconductor', '__init__.py')):
+    sys.path.insert(0, root)
 
+from muranoconductor import app
 from muranoconductor import config
 from muranoconductor.openstack.common import log
 from muranoconductor.openstack.common import service
-from muranoconductor.app import ConductorWorkflowService
 from muranoconductor import metadata
 
 
@@ -40,7 +38,7 @@ def main():
         metadata.prepare(config.CONF.data_dir)
         log.setup('conductor')
         launcher = service.ServiceLauncher()
-        launcher.launch_service(ConductorWorkflowService())
+        launcher.launch_service(app.get_rpc_service())
         launcher.wait()
     except RuntimeError, e:
         sys.stderr.write("ERROR: %s\n" % e)

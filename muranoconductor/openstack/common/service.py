@@ -117,7 +117,7 @@ class ServiceLauncher(Launcher):
             self.stop()
             if rpc:
                 try:
-                    rpc.cleanup()
+                    rpc._cleanup()
                 except Exception:
                     # We're shutting down, so it doesn't matter at this point.
                     LOG.exception(_('Exception during rpc cleanup.'))
