@@ -15,3 +15,5 @@ murano-common==0.4.1
 PyYAML>=3.1.0
 murano-metadataclient==0.4.1
 python-neutronclient>=2.3.0,<3
+
+yaql
