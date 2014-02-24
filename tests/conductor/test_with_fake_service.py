@@ -14,12 +14,12 @@
 # limitations under the License.
 
 import unittest
-from muranoconductor.app import ConductorWorkflowService
+from muranoconductor import app
 from muranoconductor.openstack.common import service
 
 
 class TestMethodsAndClasses(unittest.TestCase):
     def test_init_service_class(self):
         launcher = service.ServiceLauncher()
-        con = ConductorWorkflowService()
+        con = app.get_rpc_service()
         launcher.launch_service(con)
