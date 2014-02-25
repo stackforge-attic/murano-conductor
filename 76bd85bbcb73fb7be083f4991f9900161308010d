@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Verified+1: murano-ci
+Code-Review+2: Timur Sufiev <tsufiev@mirantis.com>
+Approved+1: Alexander Tivelkov <ativelkov@mirantis.com>
+Code-Review+2: Alexander Tivelkov <ativelkov@mirantis.com>
+Code-Review+1: Sergey Murashov <smurashov@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 25 Feb 2014 10:06:51 +0000
+Reviewed-on: https://review.openstack.org/76119
+Project: stackforge/murano-conductor
+Branch: refs/heads/master
