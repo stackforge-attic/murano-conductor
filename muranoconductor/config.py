@@ -27,7 +27,7 @@ import tempfile
 from oslo.config import cfg
 from paste import deploy
 
-from muranoconductor import __version__ as version
+from muranoconductor.version import version_info as version
 from muranoconductor.openstack.common import log
 
 paste_deploy_opts = [
