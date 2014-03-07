@@ -3,11 +3,16 @@
 
 #virtualenv
 .venv/
+.tox/
 
 #Build results
 build/
 dist/
+*.egg
 *.egg-info/
+AUTHORS
+ChangeLog
+
 
 #Python
 *.pyc
