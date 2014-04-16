@@ -1,9 +1,0 @@
-OpenStack Heat plugin for Murano
-
-Copy murano directory to resources directory of your Heat installation 
-(/opt/stack/heat/heat/engine/resources for DevStack)
-
-Plugin exposes new Heat resource of type Murano::Environment with two properties:
-1. Body - JSON-encoded Murano environment definition
-2. MuranoApiEndpoint - optional Murano API endpoint URL. 
-	If not specified then it aumatically discovered via Keystone
